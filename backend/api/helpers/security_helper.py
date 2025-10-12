@@ -5,6 +5,9 @@ from flask import current_app, request, jsonify
 
 
 def generate_jwt(user_id, role):
+    """Generate a JWT token for a user_id and role with 1 hour expiry.
+    Returns the encoded JWT as a string.
+    """
     try:
         payload = {
             "role": role,
@@ -19,6 +22,9 @@ def generate_jwt(user_id, role):
 
 
 def verify_jwt(token):
+    """Verify and decode a JWT token; return the payload if valid.
+    Raises ValueError on invalid or expired token.
+    """
     try:
         payload = jwt.decode(
             token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
@@ -33,6 +39,9 @@ def verify_jwt(token):
 def jwt_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        """Decorator to require a valid Bearer JWT; injects user_id to view func.
+        Returns 401 with message on missing/invalid token.
+        """
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return (
@@ -54,6 +63,9 @@ def jwt_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        """Decorator to enforce admin role; checks flask_login then JWT.
+        Returns 401/403 if authorization fails.
+        """
         try:
             from flask_login import current_user
 
@@ -88,6 +100,9 @@ def admin_required(f):
 def creator_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        """Decorator to enforce creator role; checks flask_login then JWT.
+        Returns 401/403 if authorization fails.
+        """
         try:
             from flask_login import current_user
 

@@ -5,6 +5,9 @@ from sqlalchemy.exc import IntegrityError
 
 
 def create_comment(user_id, campaign_id, content):
+    """Create a comment for a campaign and return it as a dict.
+    Commits the new comment to the database.
+    """
     comment = Comments(user_id=user_id, campaign_id=campaign_id, content=content)
     db.session.add(comment)
     try:
@@ -16,6 +19,9 @@ def create_comment(user_id, campaign_id, content):
 
 
 def delete_comment(comment_id):
+    """Delete a comment by its id and return a confirmation message.
+    Raises ValueError if comment does not exist.
+    """
     comment = Comments.query.get(comment_id)
     if not comment:
         raise ValueError(f"Could not find comment with comment id: {comment_id}")
@@ -30,6 +36,9 @@ def delete_comment(comment_id):
 
 
 def update_comment(comment_id, updated_content):
+    """Update the content of a comment and return the updated dict.
+    Raises ValueError if comment does not exist.
+    """
     comment = Comments.query.get(comment_id)
     if not comment:
         raise ValueError(f"Could not find comment with comment id: {comment_id}")
@@ -44,6 +53,9 @@ def update_comment(comment_id, updated_content):
 
 
 def view_comment_by_comment_id(comment_id):
+    """Return a single comment by its id as a dict.
+    Raises ValueError if not found.
+    """
     comment = Comments.query.get(comment_id)
     if not comment:
         raise ValueError(f"Could not find comment with comment id: {comment_id}")
@@ -51,16 +63,25 @@ def view_comment_by_comment_id(comment_id):
 
 
 def view_all_comments_by_user(user_id):
+    """List all comments created by a specific user.
+    Returns a list of comment dicts.
+    """
     comments = Comments.query.filter_by(user_id=user_id).all()
     return [comment.to_dict() for comment in comments]
 
 
 def view_all_comments_by_campaign(campaign_id):
+    """List all comments for a campaign.
+    Returns a list of comment dicts.
+    """
     comments = Comments.query.filter_by(campaign_id=campaign_id).all()
     return [comment.to_dict() for comment in comments]
 
 
 def toggle_like(comment_id, user_id):
+    """Toggle like/unlike for a comment by a user and return updated comment.
+    Returns action message and the updated comment dict.
+    """
     user = Users.query.get(user_id)
     comment = Comments.query.get(comment_id)
 
@@ -92,6 +113,9 @@ def toggle_like(comment_id, user_id):
 
 
 def get_total_likes(comment_id):
+    """Return total likes for a comment by id.
+    Raises ValueError if the comment doesn't exist.
+    """
     comment = Comments.query.get(comment_id)
     if not comment:
         raise ValueError(f"Comment with id {comment_id} not found")

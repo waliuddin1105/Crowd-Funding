@@ -7,10 +7,10 @@ db = SQLAlchemy()
 
 
 class DonationStatus(Enum):
-    PENDING = "Pending"
-    COMPLETED = "Completed"
-    REFUNDED = "Refunded"
-    CANCELLED = "Cancelled"
+    PENDING = "pending"
+    COMPLETED = "completed"
+    REFUNDED = "refunded"
+    CANCELLED = "cancelled"
 
 
 class UserRole(Enum):
@@ -197,7 +197,7 @@ class Payments(db.Model):
 
     payment_id = db.Column(db.Integer, primary_key=True)
     donation_id = db.Column(
-        db.Integer, db.ForeignKey("donations.donation_id"), nullable=False
+        db.Integer, db.ForeignKey("donations.donation_id"), nullable=False, unique=True
     )
     amount = db.Column(db.Numeric(8, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)

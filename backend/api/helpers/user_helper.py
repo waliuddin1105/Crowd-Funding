@@ -5,6 +5,9 @@ from sqlalchemy.exc import IntegrityError
 
 
 def create_user(username, password, email, role=None, profile_image=None):
+    """Create a new user and return the user as a dict.
+    Accepts role as enum or string; hashes the password.
+    """
     user_args = {"username": username, "email": email, "profile_image": profile_image}
 
     if role:
@@ -27,6 +30,9 @@ def create_user(username, password, email, role=None, profile_image=None):
 
 
 def change_password(user_id, new_password):
+    """Change a user's password by their user_id and return a confirmation.
+    Hashes the provided password before saving.
+    """
     user = Users.query.get(user_id)
     if not user:
         raise ValueError("User not found")
@@ -43,6 +49,9 @@ def change_password(user_id, new_password):
 
 
 def search_users(keyword):
+    """Search for users by username or email substring and return matches.
+    Returns a list of user dicts.
+    """
     users = Users.query.filter(
         (Users.username.ilike(f"%{keyword}%")) | (Users.email.ilike(f"%{keyword}%"))
     ).all()
@@ -50,6 +59,9 @@ def search_users(keyword):
 
 
 def update_user(user_id, **kwargs):
+    """Update allowed user fields (email, username, role, profile_image).
+    Returns the updated user as a dict.
+    """
     user = Users.query.get(user_id)
     if not user:
         raise ValueError("User not found")
@@ -75,6 +87,9 @@ def update_user(user_id, **kwargs):
 
 
 def checkLoginCredentials(identifier, password):
+    """Validate login credentials and return the user dict on success.
+    Raises ValueError for invalid credentials.
+    """
     user = Users.query.filter(
         (Users.username == identifier) | (Users.email == identifier)
     ).first()
@@ -89,11 +104,16 @@ def checkLoginCredentials(identifier, password):
 
 
 def get_all_users():
+    """Return all users as a list of dictionaries.
+    Useful for admin listings.
+    """
     users = Users.query.all()
     return [u.to_dict() for u in users]
 
 
 def get_user_by_username(username):
+    """Fetch a user by username and return as dict. Raises if not found.
+    """
     user = Users.query.filter_by(username=username).first()
     if not user:
         raise ValueError(f"User with username '{username}' not found")
@@ -101,6 +121,8 @@ def get_user_by_username(username):
 
 
 def get_user_by_email(email):
+    """Fetch a user by email and return as dict. Raises if not found.
+    """
     user = Users.query.filter_by(email=email).first()
     if not user:
         raise ValueError(f"User with email '{email}' not found")
@@ -108,6 +130,8 @@ def get_user_by_email(email):
 
 
 def view_user(user_id):
+    """Return a user's dict by user_id. Raises if not found.
+    """
     user = Users.query.get(user_id)
     if not user:
         raise ValueError("User not found")
@@ -115,6 +139,9 @@ def view_user(user_id):
 
 
 def delete_user(user_id):
+    """Delete a user by id and return a confirmation message.
+    Raises ValueError if the user does not exist.
+    """
     user = Users.query.get(user_id)
 
     if not user:
@@ -130,6 +157,9 @@ def delete_user(user_id):
 
 
 def delete_all_users():
+    """Delete all users from the database (use with caution).
+    Returns the number of deleted rows in a message.
+    """
     try:
         deleted = db.session.query(Users).delete()
         db.session.commit()
