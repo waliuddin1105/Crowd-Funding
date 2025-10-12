@@ -13,6 +13,9 @@ from sqlalchemy.exc import IntegrityError
 def create_campaign(
     creator_id, title, description, goal_amount, category=None, status=None
 ):
+    """Create a new campaign and return it as a dict.
+    Validates category and status enums.
+    """
     try:
         campaign = Campaigns(
             creator_id=creator_id,
@@ -40,6 +43,9 @@ def create_campaign(
 
 
 def delete_campaign(campaign_id):
+    """Delete a campaign by id and return a success message.
+    Raises ValueError if campaign not found.
+    """
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
         raise ValueError(f"No campaign found with campaign id: {campaign_id}")
@@ -54,6 +60,9 @@ def delete_campaign(campaign_id):
 
 
 def view_campaign_by_campaign_id(campaign_id):
+    """Return a campaign as a dict given its campaign_id.
+    Raises ValueError when campaign does not exist.
+    """
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
         raise ValueError(f"No campaign with campaign id: {campaign_id} was found")
@@ -61,11 +70,17 @@ def view_campaign_by_campaign_id(campaign_id):
 
 
 def view_all_campaigns_by_creator(creator_id):
+    """List all campaigns created by a specific user (creator_id).
+    Returns a list of campaign dicts.
+    """
     campaigns = Campaigns.query.filter_by(creator_id=creator_id).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
 def update_campaign_status(campaign_id, new_status):
+    """Update campaign status and create a CampaignUpdates entry recording the change.
+    Returns the updated campaign as a dict.
+    """
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
         raise ValueError(f"No campaign found with campaign id: {campaign_id}")
@@ -96,20 +111,32 @@ def update_campaign_status(campaign_id, new_status):
 
 
 def approve_campaign(campaign_id):
+    """Approve a campaign by setting its status to ACTIVE.
+    Returns the updated campaign dict.
+    """
     return update_campaign_status(campaign_id, CampaignStatus.ACTIVE)
 
 
 def update_campaign(campaign_id, **kwargs):
+    """
+    Updates campaign fields.
+    
+    IMPORTANT: raised_amount is NOT in allowed_fields - it should ONLY be updated
+    through the payment system to maintain data integrity.
+    """
+    """Update allowed campaign fields and record changes as a CampaignUpdate.
+    Returns the updated campaign dict or a message when no changes made.
+    """
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
         raise ValueError(f"No campaign found with campaign id: {campaign_id}")
 
+    # REMOVED raised_amount from allowed_fields to prevent manual manipulation
     allowed_fields = [
         "title",
         "description",
         "category",
         "goal_amount",
-        "raised_amount",
     ]
     changes = {}
 
@@ -132,6 +159,8 @@ def update_campaign(campaign_id, **kwargs):
             setattr(campaign, field, new_value)
             if old_value != new_value:
                 changes[field] = {"old": str(old_value), "new": str(new_value)}
+        elif field == "raised_amount":
+            raise ValueError("Cannot manually update raised_amount. It is automatically updated through the payment system.")
 
     if not changes:
         return {"message": "No changes made", "campaign": campaign.to_dict()}
@@ -149,11 +178,17 @@ def update_campaign(campaign_id, **kwargs):
 
 
 def search_campaign_by_title(title):
+    """Search campaigns by title substring and return matching dicts.
+    Case-insensitive.
+    """
     campaigns = Campaigns.query.filter(Campaigns.title.ilike(f"%{title}%")).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
 def view_campaigns_by_category(category):
+    """Return campaigns filtered by category enum (accepts string or enum).
+    Raises ValueError for invalid categories.
+    """
     try:
         if not isinstance(category, CampaignCategory):
             category = CampaignCategory(category)
@@ -165,20 +200,32 @@ def view_campaigns_by_category(category):
 
 
 def view_all_active_campaigns():
+    """List all campaigns with ACTIVE status.
+    Returns list of campaign dicts.
+    """
     campaigns = Campaigns.query.filter_by(status=CampaignStatus.ACTIVE).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
 def view_all_campaigns():
+    """Return all campaigns as a list of dicts.
+    Useful for admin or listing pages.
+    """
     return [campaign.to_dict() for campaign in Campaigns.query.all()]
 
 
 def view_all_completed_campaigns():
+    """List campaigns that have reached COMPLETED status.
+    Returns a list of campaign dicts.
+    """
     campaigns = Campaigns.query.filter_by(status=CampaignStatus.COMPLETED).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
 def view_all_campaigns_paginated(page=1, per_page=10, category=None, status=None):
+    """Paginate campaigns optionally filtering by category or status.
+    Returns a list of campaign dicts for the page requested.
+    """
     query = Campaigns.query
     if category:
         try:
@@ -192,3 +239,23 @@ def view_all_campaigns_paginated(page=1, per_page=10, category=None, status=None
             raise ValueError(f"Invalid status: {status}")
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     return [c.to_dict() for c in pagination.items]
+
+
+def get_campaign_available_amount(campaign_id):
+    """Return the remaining amount that can be donated to a campaign.
+    Considers pending and completed donations when computing availability.
+    """
+    from api.models.cf_models import Donations, DonationStatus
+
+    campaign = Campaigns.query.get(campaign_id)
+    if not campaign:
+        raise ValueError(f"No campaign found with campaign id: {campaign_id}")
+
+    # Get sum of all pending and completed donations
+    pending_total = db.session.query(db.func.sum(Donations.amount)).filter(
+        Donations.campaign_id == campaign_id,
+        Donations.status.in_([DonationStatus.PENDING, DonationStatus.COMPLETED])
+    ).scalar() or 0
+
+    available = campaign.goal_amount - float(pending_total)
+    return max(0, available)  # Never return negative
