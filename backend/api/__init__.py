@@ -3,6 +3,7 @@ from flask_restx import Api, Namespace
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
+from configparser import ConfigParser
 
 app = Flask(__name__)
 api = Api (
@@ -11,8 +12,12 @@ api = Api (
     title = "Crowdfunding platform",
     description = "Api for crowdfunding platform"
 )
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:14Nov%402005@localhost:5432/crowdfunding_platform"
+
+config_parser = ConfigParser(interpolation=None)
+config_parser.read('config.cfg')
+app.config['SQLALCHEMY_DATABASE_URI'] = config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = config_parser.get('global', 'SECRET_KEY')
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

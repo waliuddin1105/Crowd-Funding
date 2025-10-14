@@ -16,6 +16,7 @@ venv2119/
 secrets.env
 *.key
 *.pem
+config.cfg
 
 # Jupyter
 .ipynb_checkpoints/
