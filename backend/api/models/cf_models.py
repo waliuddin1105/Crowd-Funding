@@ -55,19 +55,6 @@ class Users(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    user_comment_likes = db.Table(
-        "user_comment_likes",
-        db.Column(
-            "user_id", db.Integer, db.ForeignKey("users.user_id"), primary_key=True
-        ),
-        db.Column(
-            "comment_id",
-            db.Integer,
-            db.ForeignKey("comments.comment_id"),
-            primary_key=True,
-        ),
-    )
-
     def setPasswordHash(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -197,7 +184,7 @@ class Payments(db.Model):
 
     payment_id = db.Column(db.Integer, primary_key=True)
     donation_id = db.Column(
-        db.Integer, db.ForeignKey("donations.donation_id"), nullable=False, unique=True
+        db.Integer, db.ForeignKey("donations.donation_id"), nullable=False
     )
     amount = db.Column(db.Numeric(8, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
