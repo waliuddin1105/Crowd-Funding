@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const defaultUser = { isLoggedIn: true, role: 'Creator', name: "John Doe" }
+const defaultUser = { isLoggedIn: 1, role: 'Donor', name: "John Doe" }
 
 function getDashboardLink(role) {
   switch (role) {
@@ -50,13 +50,13 @@ export default function Navbar() {
     // const storedUser = localStorage.getItem("user")
     // if (storedUser) {
     //   try {
-        setUser(defaultUser)
+    setUser(defaultUser)
     //   } catch (e) {
     //     console.error("Failed to parse user from localStorage", e)
     //     setUser(defaultUser)
     //   }
-    }
-  , [])
+  }
+    , [])
 
   const dashboard = useMemo(() => getDashboardLink(user?.role), [user?.role])
 
@@ -65,7 +65,7 @@ export default function Navbar() {
       bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 
       text-white backdrop-blur shadow-lg">
       <div className="mx-auto flex h-16 w-full items-center justify-between gap-4 px-4 md:px-6">
-        
+
         {/* Left: Logo + Mobile Menu */}
         <div className="flex items-center gap-2">
           <Sheet>
@@ -82,12 +82,6 @@ export default function Navbar() {
               <nav className="mt-4 flex flex-col gap-3">
                 <a href="/" className="text-sm font-medium hover:text-primary">Home</a>
                 <Link to={'/all-campaigns'} className="text-sm font-medium hover:text-primary" />Explore Campaigns
-                <a href="/categories/tech" className="text-sm hover:text-primary">Tech</a>
-                <a href="/categories/art" className="text-sm hover:text-primary">Art</a>
-                <a href="/categories/education" className="text-sm hover:text-primary">Education</a>
-                <a href="/categories/health" className="text-sm hover:text-primary">Health</a>
-                <a href="/categories/community" className="text-sm hover:text-primary">Community</a>
-                <a href="/categories/other" className="text-sm hover:text-primary">Other</a>
                 <a href="/contact" className="text-sm font-medium hover:text-primary">Contact</a>
 
                 <div className="mt-4">
@@ -96,7 +90,7 @@ export default function Navbar() {
 
                 <div className="mt-4 flex flex-col gap-2">
                   <Button asChild className="w-full">
-                    <a href="/start">Start a Campaign</a>
+                    <a href="/create-campaign">Start a Campaign</a>
                   </Button>
 
                   {user?.isLoggedIn ? (
@@ -110,7 +104,7 @@ export default function Navbar() {
                       <Button variant="ghost" asChild className="w-full">
                         <a href="/logout">Logout</a>
                       </Button> */}
-                        <p>{user.name}</p>
+                      <p>{user.name}</p>
                     </>
                   ) : (
                     <Button variant="secondary" asChild className="w-full">
@@ -132,32 +126,17 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-20">
           <a href="/" className="text-sm font-medium hover:text-primary">Home</a>
           <Link to={"/all-campaigns"} className="text-sm font-medium hover:text-primary" >All Campaigns</Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <span role="button" tabIndex={0} className="text-sm font-medium inline-flex items-center gap-1 cursor-pointer hover:text-primary">
-                Categories ▾
-              </span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 bg-gray-900 text-white">
-              <DropdownMenuLabel>Browse Categories</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><a href="/categories/tech">Tech</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/categories/art">Art</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/categories/education">Education</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/categories/health">Health</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/categories/community">Community</a></DropdownMenuItem>
-              <DropdownMenuItem asChild><a href="/categories/other">Other</a></DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+
           <a href="/contact" className="text-sm font-medium hover:text-primary">Contact</a>
         </nav>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          
+
 
           <Button asChild className="hidden md:inline-flex">
-            <a href="/start">Start a Campaign</a>
+            <a href="/create-campaign">Start a Campaign</a>
+
           </Button>
 
           {user?.isLoggedIn ? (
@@ -189,10 +168,14 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
-          ) : (
+          ) : (<>
             <Button variant="secondary" asChild>
               <a href="/login">Login</a>
             </Button>
+            <Button variant="secondary" asChild>
+              <a href="/register">Sign Up</a>
+            </Button>
+          </>
           )}
         </div>
       </div>
