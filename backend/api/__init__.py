@@ -3,7 +3,6 @@ from flask_restx import Api, Namespace
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
-<<<<<<< HEAD
 from configparser import ConfigParser
 
 app = Flask(__name__)
@@ -14,7 +13,6 @@ api = Api (
     description = "Api for crowdfunding platform"
 )
 
-=======
 from flask_cors import CORS
 from configparser import ConfigParser
 
@@ -24,22 +22,17 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Load configuration
->>>>>>> 1a0925bb36f18b7b29c8fe266cdd68f82cf1e032
 config_parser = ConfigParser(interpolation=None)
 config_parser.read('config.cfg')
 app.config['SQLALCHEMY_DATABASE_URI'] = config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = config_parser.get('global', 'SECRET_KEY')
 
-<<<<<<< HEAD
-=======
 # Initialize extensions
->>>>>>> 1a0925bb36f18b7b29c8fe266cdd68f82cf1e032
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 
-<<<<<<< HEAD
 users_ns = Namespace('Users', description='Data about the users')
 campaigns_ns = Namespace('Campaigns', description="Data about the campaigns")
 donations_ns = Namespace('Donations', description='Data about the donations')
@@ -54,7 +47,6 @@ api.add_namespace(updates_ns, '/updates')
 
 
 import api.models.cf_models
-=======
 # Initialize API
 api = Api(
     app,
@@ -105,4 +97,3 @@ try:
 except Exception as e:
     print("❌ Database connection failed:")
     print(e)
->>>>>>> 1a0925bb36f18b7b29c8fe266cdd68f82cf1e032
