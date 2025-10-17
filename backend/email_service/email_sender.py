@@ -8,7 +8,7 @@ SENDER_PASSKEY = "kkghcqhchxfadokx"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def send_email(reciever_email, subject, template_name, **kwargs):
+def send_email(receiver_email, subject, template_name, **kwargs):
     template_path = os.path.join(BASE_DIR, "email_templates", template_name)
 
     if not os.path.exists(template_path):
@@ -23,15 +23,15 @@ def send_email(reciever_email, subject, template_name, **kwargs):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
-    msg["To"] = reciever_email
+    msg["To"] = receiver_email
     msg.attach(MIMEText(html_template, "html"))
 
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(SENDER_EMAIL, SENDER_PASSKEY)
-        server.sendmail(SENDER_EMAIL, reciever_email, msg.as_string())
+        server.sendmail(SENDER_EMAIL, receiver_email, msg.as_string())
         server.quit()
-        return {"message": f"Email sent to {reciever_email}"}
+        return {"message": f"Email sent to {receiver_email}"}
     except Exception as e:
         raise RuntimeError(f"Could not send email. Error: {e}")
