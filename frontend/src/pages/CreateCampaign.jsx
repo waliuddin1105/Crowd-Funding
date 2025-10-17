@@ -39,16 +39,16 @@ export default function CreateCampaign() {
 
     const form = useForm({
         defaultValues: {
+            // creator_id: //fetching from backend
             title: "",
-            short_description: "",
-            long_description: "",
+            description: "",
             category: "",
             goal_amount: "",
             start_date: new Date(),
             end_date: undefined,
             image: "",
-            is_approved: false
-            //funds_raised missing rn, will add later, should be set as 0
+            // is_approved: false
+            // funds_raised missing rn, will add later, should be set as 0
         },
     })
     useEffect(() => {
@@ -307,27 +307,11 @@ export default function CreateCampaign() {
 
                             {/* Right Column */}
                             <div className="space-y-4 flex flex-col">
-                                <FormField
-                                    control={form.control}
-                                    name="short_description"
-                                    render={({ field }) => (
-                                        <FormItem className="flex-1">
-                                            <FormLabel className="text-gray-300">Short Description</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    rows={3}
-                                                    className="bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                
 
                                 <FormField
                                     control={form.control}
-                                    name="long_description"
+                                    name="description"
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
                                             <FormLabel className="text-gray-300">Full Description</FormLabel>

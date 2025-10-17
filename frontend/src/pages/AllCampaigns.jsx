@@ -180,11 +180,11 @@ useEffect(() => {
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="charity">Charity</SelectItem>
-                    <SelectItem value="medical">Medical</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="emergency">Emergency</SelectItem>
-                    <SelectItem value="personal">Personal</SelectItem>
+                    <SelectItem value="CHARITY">Charity</SelectItem>
+                    <SelectItem value="MEDICAL">Medical</SelectItem>
+                    <SelectItem value="EDUCATION">Education</SelectItem>
+                    <SelectItem value="EMERGENCY">Emergency</SelectItem>
+                    <SelectItem value="PERSONAL">Personal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

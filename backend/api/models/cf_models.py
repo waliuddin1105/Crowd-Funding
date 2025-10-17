@@ -3,7 +3,12 @@ from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+from api import db
+user_comment_likes = db.Table(
+    "user_comment_likes",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.user_id"), primary_key=True),
+    db.Column("comment_id", db.Integer, db.ForeignKey("comments.comment_id"), primary_key=True),
+)
 
 
 class DonationStatus(Enum):
@@ -71,6 +76,9 @@ class Users(db.Model):
             "updated_at": self.updated_at,
         }
 
+    liked_comments = db.relationship(
+    "Comments", secondary=user_comment_likes, back_populates="liked_by_users"
+    )
 
 class Campaigns(db.Model):
     __tablename__ = "campaigns"
@@ -82,6 +90,7 @@ class Campaigns(db.Model):
     category = db.Column(db.Enum(CampaignCategory), nullable=False)
     goal_amount = db.Column(db.Numeric(10, 2), nullable=False)
     raised_amount = db.Column(db.Numeric(10, 2), default=0)
+    image = db.Column(db.String(100),nullable=False)
     status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.PENDING)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
@@ -118,7 +127,7 @@ class Campaigns(db.Model):
             "category": self.category.value,
             "goal_amount": float(self.goal_amount),
             "raised_amount": float(self.raised_amount),
-            "image_url": self.image_url,
+            "image": self.image,
             "start_date": self.start_date,
             "end_date": self.end_date,
             "status": self.status.value,
@@ -137,7 +146,7 @@ class Campaigns(db.Model):
 
 class Comments(db.Model):
     __tablename__ = "comments"
-
+    
     comment_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(
         db.Integer, db.ForeignKey("campaigns.campaign_id"), nullable=False
@@ -369,10 +378,3 @@ class AdminReviews(db.Model):
         }
 
 
-user_comment_likes = db.Table(
-    "user_comment_likes",
-    db.Column("user_id", db.Integer, db.ForeignKey("users.user_id"), primary_key=True),
-    db.Column(
-        "comment_id", db.Integer, db.ForeignKey("comments.comment_id"), primary_key=True
-    ),
-)

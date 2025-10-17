@@ -155,7 +155,8 @@ export default function CampaignCard({ campaign }) {
         <div className="mb-4 flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            Started {new Date(campaign.start_date).toLocaleDateString()}
+            Started {new Date(campaign.created_at + "Z").toLocaleDateString()
+}
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />

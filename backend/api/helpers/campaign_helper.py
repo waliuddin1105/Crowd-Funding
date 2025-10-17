@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 
 def create_campaign(
-    creator_id, title, description, goal_amount, category=None, status=None
+    creator_id, title, description, goal_amount, image, category, raised_amount, start_date, end_date, status='Pending'
 ):
     """Create a new campaign and return it as a dict.
     Validates category and status enums.
@@ -21,6 +21,7 @@ def create_campaign(
             creator_id=creator_id,
             title=title,
             description=description,
+            image=image,
             category=(
                 category
                 if isinstance(category, CampaignCategory)
@@ -30,6 +31,9 @@ def create_campaign(
             status=(
                 status if isinstance(status, CampaignStatus) else CampaignStatus(status)
             ),
+            raised_amount=raised_amount,
+            start_date=start_date,
+            end_date=end_date
         )
         db.session.add(campaign)
         db.session.commit()

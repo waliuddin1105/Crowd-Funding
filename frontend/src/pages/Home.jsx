@@ -11,7 +11,7 @@ import { Link } from "react-router-dom"
 
 const categories = ["Technology", "Art", "Education", "Health", "Social Causes", "Environment", "Music", "Film"]
 
-const successProjects = [
+const campaigns = [
   {
     id: 1,
     title: "Portable Solar Charger",
@@ -247,7 +247,7 @@ export default function Home() {
               </Link>
             </div>
             <div className="mt-6 flex gap-4 overflow-x-auto">
-              {successProjects.map((p) => {
+              {campaigns.map((p) => {
                 const pct = Math.min(100, Math.round((p.raised / p.goal) * 100))
                 return (
                   <figure key={p.id} className="shrink-0 w-72 rounded-lg border border-gray-800 bg-gray-900">
