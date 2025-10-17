@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donation Successful - CrowdFundPK</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      background-color: #008374;
+      color: white;
+      text-align: center;
+      padding: 25px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .content {
+      padding: 30px;
+      line-height: 1.6;
+    }
+
+    .content h2 {
+      color: #008374;
+      font-size: 20px;
+      margin-top: 0;
+    }
+
+    .details {
+      background-color: #f3f4f6;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .details p {
+      margin: 8px 0;
+    }
+
+    .details strong {
+      color: #222;
+    }
+
+    .footer {
+      background-color: #f3f4f6;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .footer a {
+      color: #008374;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Thank You for Your Donation, {{username}}!</h1>
+    </div>
+
+    <div class="content">
+      <h2>Your donation was successful 🎉</h2>
+      <p>
+        We truly appreciate your generous contribution to <strong>{{campaign_name}}</strong>.
+        Your support helps bring meaningful change and supports those in need.
+      </p>
+
+      <div class="details">
+        <p><strong>Donation Amount:</strong> Rs. {{donation_amount}}</p>
+        <p><strong>Payment Method:</strong> {{payment_method}}</p>
+        <p><strong>Payment Time:</strong> {{payment_time}}</p>
+      </div>
+
+      <p>
+        You can view your donation history anytime by logging into your
+        <a href="https://crowdfundpk.com/dashboard">CrowdFundPK dashboard</a>.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>Thank you for being part of the CrowdFundPK community ❤️</p>
+      <p><a href="https://crowdfundpk.com">Visit our website</a></p>
+    </div>
+  </div>
+</body>
+</html>
