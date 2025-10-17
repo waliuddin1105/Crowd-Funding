@@ -28,11 +28,10 @@ class CampaignStatus(Enum):
 
 class CampaignCategory(Enum):
     EDUCATION = "education"
-    HEALTHCARE = "healthcare"
-    ENVIRONMENT = "environment"
-    ANIMALS = "animals"
-    OTHER = "other"
-
+    PERSONAL = "personal"
+    EMERGENCY = "emergency"
+    CHARITY = "charity"
+    MEDICAL= "medical"
 
 class CampaignPaymentStatus(Enum):
     PENDING = "pending"
