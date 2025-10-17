@@ -1,5 +1,4 @@
 # Requires Python 3.11.9
-python_version == "3.11.9"
 
 # Core Flask framework
 Flask==3.0.3
@@ -27,4 +26,4 @@ redis==5.1.0
 
 # Utilities
 python-dotenv>=1.0.0
-gradio>=4.0.0
+
