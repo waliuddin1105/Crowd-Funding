@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from "react"
 import { Search, Filter, SortAsc } from "lucide-react"
 import CampaignCard from "../components/CampaignCard"
-import mockCampaigns from "../lib/campaigns.js"
+// import mockCampaigns from "../lib/campaigns.js"
 import Navbar from "@/components/Navbar"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-
+import axios from "axios"
+import { configDotenv } from "dotenv"
 export default function AllCampaigns() {
   const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,56 +17,52 @@ export default function AllCampaigns() {
   const [sortBy, setSortBy] = useState("newest")
 
   // API call to fetch campaigns from database
-  useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        /* 
-        // Uncomment when backend API is ready
-        const response = await fetch('/api/campaigns', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        
-        const data = await response.json()
-        setCampaigns(data.campaigns || data)
-        */
-
-        // Temporary mock data for development (from campaigns.js)
-        setCampaigns(mockCampaigns)
-        setLoading(false)
-        console.log('Mock campaigns: ', mockCampaigns)
-        
-      } catch (err) {
-        console.error('Error fetching campaigns:', err)
-        setError(err.message)
-        setLoading(false)
+useEffect(() => {
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/campaigns/`);
+      
+      // Check response status BEFORE parsing JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      const data = await response.json();
+      console.log('Fetched data:', data);
+      
+      // Set campaigns from the response
+      if (data.success && data.campaigns) {
+        setCampaigns(data.campaigns);
+      } else {
+        throw new Error('Invalid response format');
+      }
+      
+    } catch (err) {
+      console.error('Error fetching campaigns:', err);
+      setError(err.message);
+    } finally {
+      // Always set loading to false, whether success or error
+      setLoading(false);
     }
+  };
 
-    fetchCampaigns()
-  }, [])
+  fetchCampaigns();
+}, []);
 
   // Filter and sort campaigns
   const filteredAndSortedCampaigns = useMemo(() => {
     if (!campaigns.length) return []
-    
+
     let filtered = campaigns.filter(campaign => {
       const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           campaign.short_description.toLowerCase().includes(searchTerm.toLowerCase())
-      
+        campaign.short_description.toLowerCase().includes(searchTerm.toLowerCase())
+
       const matchesCategory = categoryFilter === "all" || campaign.category === categoryFilter
-      
+
       return matchesSearch && matchesCategory
     })
 
@@ -128,8 +125,8 @@ export default function AllCampaigns() {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Error Loading Campaigns</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-neon"
             >
               Retry
@@ -211,9 +208,9 @@ export default function AllCampaigns() {
               </div>
 
               {/* Clear Filters */}
-              <Button 
-                variant="outline" 
-                onClick={clearFilters} 
+              <Button
+                variant="outline"
+                onClick={clearFilters}
                 className="ml-auto border-border hover:border-primary hover:bg-primary/10 hover:text-primary transition-all duration-300"
               >
                 Clear Filters

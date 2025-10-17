@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import Navbar from "@/components/Navbar"
+import { Link } from "react-router-dom"
 
 const categories = ["Technology", "Art", "Education", "Health", "Social Causes", "Environment", "Music", "Film"]
 
@@ -103,10 +104,10 @@ export default function Home() {
               </p>
               <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
                 <Button asChild>
-                  <a href="/all-campaigns">Explore campaigns</a>
+                  <Link to={"/all-campaigns"}>Explore campaigns</Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <a href="#start" className="text-black">Start a campaign</a>
+                <Link to={'/create-campaign'} className="text-black">Start a campaign</Link>
                 </Button>
               </div>
             </div>
@@ -241,9 +242,9 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-12">
             <div className="flex items-center justify-between">
               <h2 className="text-xl md:text-2xl font-semibold">Fully funded on Crowdfund</h2>
-              <a href="/all-campaigns" className="text-sm text-gray-400 hover:text-gray-200">
+              <Link to={"/all-campaigns"} className="text-sm text-gray-400 hover:text-gray-200">
                 See more
-              </a>
+              </Link>
             </div>
             <div className="mt-6 flex gap-4 overflow-x-auto">
               {successProjects.map((p) => {
@@ -352,10 +353,10 @@ export default function Home() {
             <p className="mt-2 text-sm text-gray-400">Join thousands of creators bringing new ideas to life.</p>
             <div className="mt-6 flex items-center justify-center gap-3">
               <Button asChild>
-                <a href="/all-campaigns">Find inspiration</a>
+                <Link to={"/all-campaigns"}>Find inspiration</Link>
               </Button>
               <Button variant="outline" asChild>
-                <a href="#start" className="text-black">Start a campaign</a>
+                <Link to={'/create-campaign'} className="text-black">Start a campaign</Link>
               </Button>
             </div>
           </div>
