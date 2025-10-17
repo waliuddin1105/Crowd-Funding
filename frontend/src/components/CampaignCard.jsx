@@ -159,7 +159,7 @@ export default function CampaignCard({ campaign }) {
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            Creator: {campaign.creator_id}
+            Creator: {campaign.creator_name || 'creator_name'}
           </div>
         </div>
 

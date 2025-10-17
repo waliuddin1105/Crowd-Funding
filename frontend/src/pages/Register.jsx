@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "../components/ui/button"
 import { Mail, Lock, User, Sparkles, ArrowRight, AlertCircle, Users, Zap, Check } from "lucide-react"
-<<<<<<< HEAD
-import { cn } from "../lib/utils"
-=======
 import { cn } from "../lib/utils.js"
->>>>>>> bbf0d11 (frontend pages completed, backend routes left)
 
 // Inline RoleCard component (smaller)
 function RoleCard({ role, selected, onSelect }) {
