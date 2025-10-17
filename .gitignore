@@ -118,3 +118,23 @@ yarn-error.log*
 # Frontend build
 frontend/dist/
 frontend/build/
+
+# Flask migrations (optional - some teams commit this)
+# backend/migrations/
+
+# Config files with sensitive data
+backend/config.cfg
+config.cfg
+
+# PostgreSQL
+*.pgsql
+
+# Flask instance folder
+instance/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover

@@ -1,9 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from api import db
 
 
 class DonationStatus(Enum):
