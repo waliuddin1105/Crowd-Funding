@@ -4,6 +4,7 @@ from flask_restx import fields
 campaigns_data = campaigns_ns.fields = (
     "Campaigns Data",
     {
+        "creator_id" : fields.Integer(required = True, description = "Enter a valid creator user ID"),
         "title" : fields.String(required = True, description = "Enter campaign title"),
         "description" : fields.String(required = True, description = "Enter campaign description"),
         "goal_amount" : fields.Float(required = True, description = "Enter goal amount"),
