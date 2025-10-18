@@ -8,6 +8,6 @@ donations_data = donations_ns.fields = (
         "campaign_id" : fields.Integer(required = True, description = "Enter a valid campaign ID"),
         "amount" : fields.Float(required = True, description = "Enter donation amount"),
         "created_at" : fields.DateTime(required = False, description = "Donation creation timestamp"),
-        "status" : fields.String(required = True, description = "Enter donation status")
+        "status" : fields.String(required = True, description = "Enter donation status e.g 'pending', 'completed', 'refunded', 'cancelled'"),
     }
 )
