@@ -8,6 +8,6 @@ comments_data = comments_ns.fields = (
         "campaign_id" : fields.Integer(required = True, description = "Enter a valid campaign ID"),
         "comment_text" : fields.String(required = True, description = "Enter comment text"),
         "created_at" : fields.DateTime(required = False, description = "Comment creation timestamp"),
-        "updated_at" : fields.DateTime(required = False, description = "Last comment update timestamp")
+        "likes" : fields.Integer(required = True, description = "No. of likes on the comment")
     }
 )
