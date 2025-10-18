@@ -33,10 +33,15 @@ class CampaignStatus(Enum):
 
 class CampaignCategory(Enum):
     EDUCATION = "education"
+    HEALTHCARE = "healthcare"
+    ENVIRONMENT = "environment"
+    ANIMALS = "animals"
+    OTHER = "other"
     PERSONAL = "personal"
     EMERGENCY = "emergency"
     CHARITY = "charity"
-    MEDICAL= "medical"
+    MEDICAL = "medical"
+
 
 class CampaignPaymentStatus(Enum):
     PENDING = "pending"
@@ -57,6 +62,14 @@ class Users(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # FIXED: Added the missing relationship for liked comments
+    liked_comments = db.relationship(
+        "Comments",
+        secondary=user_comment_likes,
+        back_populates="liked_by_users",
+        lazy="dynamic"
     )
 
     def setPasswordHash(self, password):
@@ -160,7 +173,10 @@ class Comments(db.Model):
     )
 
     liked_by_users = db.relationship(
-        "Users", secondary="user_comment_likes", back_populates="liked_comments"
+        "Users",
+        secondary=user_comment_likes,
+        back_populates="liked_comments",
+        lazy="dynamic"
     )
 
     def to_dict(self):
@@ -214,22 +230,6 @@ class Payments(db.Model):
                 {
                     "donation_id": self.donation.donation_id,
                     "amount": float(self.donation.amount),
-                    "donor": (
-                        {
-                            "user_id": self.donation.donor.user_id,
-                            "username": self.donation.donor.username,
-                        }
-                        if self.donation and self.donation.donor
-                        else None
-                    ),
-                    "campaign": (
-                        {
-                            "campaign_id": self.donation.campaign.campaign_id,
-                            "title": self.donation.campaign.title,
-                        }
-                        if self.donation and self.donation.campaign
-                        else None
-                    ),
                 }
                 if self.donation
                 else None
@@ -248,6 +248,7 @@ class Donations(db.Model):
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.Enum(DonationStatus), default=DonationStatus.PENDING)
+    
     user = db.relationship(
         "Users",
         backref=db.backref("donations", lazy=True, cascade="all, delete-orphan"),
@@ -257,16 +258,15 @@ class Donations(db.Model):
         return {
             "donation_id": self.donation_id,
             "amount": float(self.amount),
-            "donation_date": self.donation_date,
-            "message": self.message,
+            "created_at": self.created_at,
             "status": self.status.value,
-            "donor": (
+            "user": (
                 {
-                    "user_id": self.donor.user_id,
-                    "username": self.donor.username,
-                    "profile_image": self.donor.profile_image,
+                    "user_id": self.user.user_id,
+                    "username": self.user.username,
+                    "profile_image": self.user.profile_image,
                 }
-                if self.donor
+                if self.user
                 else None
             ),
             "campaign": (
@@ -294,7 +294,7 @@ class Follows(db.Model):
     def to_dict(self):
         return {
             "follow_id": self.follow_id,
-            "followed_at": self.followed_at,
+            "created_at": self.created_at,
             "user": (
                 {
                     "user_id": self.user.user_id,
@@ -325,17 +325,11 @@ class CampaignUpdates(db.Model):
     def to_dict(self):
         return {
             "update_id": self.update_id,
-            "title": self.title,
             "content": self.content,
             "created_at": self.created_at,
             "campaign": (
                 {"campaign_id": self.campaign.campaign_id, "title": self.campaign.title}
                 if self.campaign
-                else None
-            ),
-            "user": (
-                {"user_id": self.user.user_id, "username": self.user.username}
-                if self.user
                 else None
             ),
         }
@@ -361,9 +355,9 @@ class AdminReviews(db.Model):
     def to_dict(self):
         return {
             "review_id": self.review_id,
-            "decision": self.decision.value if self.decision else None,
-            "comments": self.reason,
-            "reviewed_at": self.reviewed_at,
+            "decision": self.decision,
+            "comments": self.comments,
+            "created_at": self.created_at,
             "admin": (
                 {"user_id": self.admin.user_id, "username": self.admin.username}
                 if self.admin
@@ -374,4 +368,25 @@ class AdminReviews(db.Model):
                 if self.campaign
                 else None
             ),
+        }
+
+
+class ChatHistory(db.Model):
+    __tablename__ = "chat_history"
+
+    chat_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    role = db.Column(db.String(10), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("Users", backref=db.backref("chat_history", lazy=True))
+
+    def to_dict(self):
+        return {
+            "chat_id": self.chat_id,
+            "user_id": self.user_id,
+            "role": self.role,
+            "message": self.message,
+            "timestamp": self.timestamp,
         }
