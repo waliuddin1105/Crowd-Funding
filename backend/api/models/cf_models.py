@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from werkzeug.security import generate_password_hash, check_password_hash
+from api import bcrypt 
 from api import db
 
 
@@ -58,10 +58,10 @@ class Users(db.Model):
     )
 
     def setPasswordHash(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password)
 
     def checkHashedPassword(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self):
         return {
