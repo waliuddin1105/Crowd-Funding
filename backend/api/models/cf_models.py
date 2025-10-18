@@ -50,16 +50,6 @@ class CampaignPaymentStatus(Enum):
     REFUNDED = "refunded"
 
 
-# Define the association table first (before the models that use it)
-user_comment_likes = db.Table(
-    "user_comment_likes",
-    db.Column("user_id", db.Integer, db.ForeignKey("users.user_id"), primary_key=True),
-    db.Column(
-        "comment_id", db.Integer, db.ForeignKey("comments.comment_id"), primary_key=True
-    ),
-)
-
-
 class Users(db.Model):
     __tablename__ = "users"
 
