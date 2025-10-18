@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from api import bcrypt 
+from api import bcrypt
 from api import db
 
 
@@ -34,7 +34,8 @@ class CampaignCategory(Enum):
     PERSONAL = "personal"
     EMERGENCY = "emergency"
     CHARITY = "charity"
-    MEDICAL= "medical"
+    MEDICAL = "medical"
+
 
 class CampaignPaymentStatus(Enum):
     PENDING = "pending"
@@ -379,3 +380,13 @@ user_comment_likes = db.Table(
         "comment_id", db.Integer, db.ForeignKey("comments.comment_id"), primary_key=True
     ),
 )
+
+
+class ChatHistory(db.Model):
+    __tablename__ = "chat_history"
+
+    chat_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    role = db.Column(db.String(10), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
