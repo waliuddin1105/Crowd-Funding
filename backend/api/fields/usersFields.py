@@ -1,7 +1,7 @@
 from api import users_ns
 from flask_restx import fields
 
-users_data = users_ns.fields = (
+users_data = users_ns.model (
     "Users Data",
     {
         "username" : fields.Integer(required = True, description = "Enter a unique username"),

@@ -1,7 +1,7 @@
 from api import donations_ns
 from flask_restx import fields
 
-donations_data = donations_ns.fields = (
+donations_data = donations_ns.model (
     "Donations Data",
     {
         "user_id" : fields.Integer(required = True, description = "Enter a valid user ID"),

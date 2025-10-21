@@ -1,7 +1,7 @@
 from api import comments_ns
 from flask_restx import fields
 
-comments_data = comments_ns.fields = (
+comments_data = comments_ns.model (
     "Comments Data",
     {
         "user_id" : fields.Integer(required = True, description = "Enter a valid user ID"),
