@@ -5,6 +5,8 @@ from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from configparser import ConfigParser
 from flask_cors import CORS
+from api.routes.rag import chat_ns
+
 
 app = Flask(__name__)
 api = Api(
@@ -13,8 +15,6 @@ api = Api(
     title="Crowdfunding platform",
     description="Api for crowdfunding platform"
 )
-# Create alias for external use (avoid naming conflict with package name)
-api_instance = api
 
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
@@ -50,7 +50,7 @@ api.add_namespace(donations_ns, '/donations')
 api.add_namespace(follows_ns, '/follows')
 api.add_namespace(campaign_updates_ns, '/campaign-updates')
 api.add_namespace(admin_reviews_ns,'/admin-reviews')
-
+api.add_namespace(chat_ns, '/chat') #penda ne rag mei dali hoyi, ab isko chherio nh saad
 
 # Force SQLAlchemy to configure all mappers
 try:
@@ -60,6 +60,6 @@ except Exception as e:
     print(f"Warning: Mapper configuration issue: {e}")
     print("Continuing anyway - this might cause issues with some models")
 
-# Import models first (chat_ns needs db to be initialized)
+
 import api.models.cf_models
 import api.routes.users

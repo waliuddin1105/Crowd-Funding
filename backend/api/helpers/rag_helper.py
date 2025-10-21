@@ -1,9 +1,9 @@
 from datetime import datetime
-from api import db
 from api.models.cf_models import ChatHistory
 
 
 def add_message(user_id, role, message):
+    from api import db
     try:
         msg = ChatHistory(
             user_id=user_id, role=role, message=message, timestamp=datetime.utcnow()
@@ -55,6 +55,7 @@ def get_chat_history_with_timestamps(user_id, limit=None):
 
 
 def delete_chat_history(user_id):
+    from api import db
     try:
         ChatHistory.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         db.session.commit()
