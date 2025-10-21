@@ -27,3 +27,19 @@ redis==5.1.0
 # Utilities
 python-dotenv>=1.0.0
 
+# Core dependencies for RAG chatbot
+python-dotenv>=1.0.0
+gradio>=4.0.0
+
+# LangChain ecosystem
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-chroma>=0.1.0
+langchain-openai>=0.0.5
+
+# Vector store and embeddings
+chromadb>=0.4.0
+openai>=1.0.0
+
+# Additional utilities
+charset-normalizer>=3.0.0
