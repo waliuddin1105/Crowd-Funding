@@ -80,7 +80,7 @@ class RegisterUser(Resource):
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
         
-#users/profile
+#users/profile  ->`get user profile
 @users_ns.route('/profile/<int:user_id>')
 class GetUserProfile(Resource):
     @users_ns.doc("Get user profile")
@@ -102,7 +102,7 @@ class GetUserProfile(Resource):
 #users/update-profile
 @users_ns.route('/update-profile/<int:id>')
 class UpdateUserProfile(Resource):
-    # @jwt_required
+    @jwt_required
     @users_ns.doc("Update user profile")
     @users_ns.expect(users_data)
     def put(self, id):
@@ -113,19 +113,25 @@ class UpdateUserProfile(Resource):
                 return {"Error" : "Such user does not exist"}, 404
         
             data = request.json
-            new_username = data.get(data['username'], user_to_update.username)
-            new_password = data.get(data['password'], user_to_update.password)
-            new_role = data.get(data['role'], user_to_update.role.value)
-            new_profile_image = data.get(data['profile_image'], user_to_update.profile_image)
+            new_username = data.get('username', user_to_update.username)
+            new_password = data.get('password', None)
+            new_role = data.get('role', None)
+            new_profile_image = data.get('profile_image', user_to_update.profile_image)
 
-            if new_username == Users.query.filter_by(username = new_username).first():
+            if Users.query.filter_by(username = new_username).first():
                 return {"Error" : "Username already exists! Please choose a unique username"}, 400
             
+            if not new_role:    #put it here bcz we were running a check for it right here after it was assigned
+                new_role = user_to_update.role.value
             if new_role.lower() not in ['donor', 'creator', 'admin']:
                 return {"Error" : "Please select a valid user role"}, 400
             
+            if new_password:
+                user_to_update.setPasswordHash(new_password)
+
+            
+
             user_to_update.username = new_username
-            user_to_update.setPasswordHash(new_password)
             user_to_update.role = new_role
             user_to_update.profile_image = new_profile_image
 

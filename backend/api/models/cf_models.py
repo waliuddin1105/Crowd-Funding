@@ -84,9 +84,7 @@ class Users(db.Model):
             "username": self.username,
             "email": self.email,
             "role": self.role.value if self.role else None,
-            "profile_image": self.profile_image,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "profile_image": self.profile_image
         }
 
     liked_comments = db.relationship(
