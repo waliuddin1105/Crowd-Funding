@@ -1,7 +1,7 @@
 from api import campaigns_ns
 from flask_restx import fields
 
-campaigns_data = campaigns_ns.fields = (
+campaigns_data = campaigns_ns.model  (
     "Campaigns Data",
     {
         "creator_id" : fields.Integer(required = True, description = "Enter a valid creator user ID"),

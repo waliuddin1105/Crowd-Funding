@@ -1,9 +1,9 @@
 from datetime import datetime
-from api import db
-from api.models.cf_models import ChatHistory
 
 
 def add_message(user_id, role, message):
+    from api import db
+    from api.models.cf_models import ChatHistory
     try:
         msg = ChatHistory(
             user_id=user_id, role=role, message=message, timestamp=datetime.utcnow()
@@ -17,6 +17,7 @@ def add_message(user_id, role, message):
 
 
 def get_chat_history(user_id, limit=10):
+    from api.models.cf_models import ChatHistory
     try:
         messages = (
             ChatHistory.query.filter_by(user_id=user_id)
@@ -32,6 +33,7 @@ def get_chat_history(user_id, limit=10):
 
 
 def get_chat_history_with_timestamps(user_id, limit=None):
+    from api.models.cf_models import ChatHistory
     try:
         query = ChatHistory.query.filter_by(user_id=user_id).order_by(
             ChatHistory.timestamp.asc()
@@ -55,6 +57,8 @@ def get_chat_history_with_timestamps(user_id, limit=None):
 
 
 def delete_chat_history(user_id):
+    from api import db
+    from api.models.cf_models import ChatHistory
     try:
         ChatHistory.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         db.session.commit()
@@ -67,6 +71,7 @@ def delete_chat_history(user_id):
 
 
 def get_recent_context(user_id, limit=5):
+    from api.models.cf_models import ChatHistory
     try:
         messages = (
             ChatHistory.query.filter_by(user_id=user_id)

@@ -1,10 +1,10 @@
 from api import users_ns
 from flask_restx import fields
 
-users_data = users_ns.fields = (
+users_data = users_ns.model (
     "Users Data",
     {
-        "username" : fields.Integer(required = True, description = "Enter a unique username"),
+        "username" : fields.String(required = True, description = "Enter a unique username"),
         "email" : fields.String(required = True, description = "Enter email"),
         "password" : fields.String(required = True, description = "Enter a strong password"),
         "role" : fields.String(required = True, description = "Enter role e.g 'donor', 'creator', 'admin'"),

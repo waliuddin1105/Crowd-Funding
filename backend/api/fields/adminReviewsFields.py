@@ -1,7 +1,7 @@
 from api import admin_reviews_ns
 from flask_restx import fields
 
-admin_reviews_data = admin_reviews_ns.fields = (
+admin_reviews_data = admin_reviews_ns.model (
     "Admin Reviews Data",
     {
         "admin_id" : fields.Integer(required=True, description="ID of the admin(user) who made the review"),

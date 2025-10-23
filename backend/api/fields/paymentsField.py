@@ -1,7 +1,7 @@
 from api import payments_ns
 from flask_restx import fields
 
-payments_data = payments_ns.fields = (
+payments_data = payments_ns.model (
     "Payments Data",
     {
         "donator_id" : fields.Integer(required = True, description = "Enter a valid donor user ID"),

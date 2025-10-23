@@ -1,7 +1,7 @@
 from api import follows_ns
 from flask_restx import fields
 
-follows_data = follows_ns.fields = (
+follows_data = follows_ns.model (
     "Follows Data",
     {
         "user_id" : fields.Integer(required=True, description="ID of the user who is being followed"),

@@ -19,9 +19,9 @@ class DonationStatus(Enum):
 
 
 class UserRole(Enum):
-    DONOR = "donor"
-    CREATOR = "creator"
-    ADMIN = "admin"
+    donor = "donor"
+    creator = "creator"
+    admin = "admin"
 
 
 class CampaignStatus(Enum):
@@ -73,7 +73,7 @@ class Users(db.Model):
     )
 
     def setPasswordHash(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def checkHashedPassword(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
@@ -84,9 +84,7 @@ class Users(db.Model):
             "username": self.username,
             "email": self.email,
             "role": self.role.value if self.role else None,
-            "profile_image": self.profile_image,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "profile_image": self.profile_image
         }
 
     liked_comments = db.relationship(

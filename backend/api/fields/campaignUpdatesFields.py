@@ -1,7 +1,7 @@
 from api import campaign_updates_ns
 from flask_restx import fields
 
-campaign_updates_data = campaign_updates_ns.fields = (
+campaign_updates_data = campaign_updates_ns.model  (
     "Campaign Updates Data",
     {
         "campaign_id" : fields.Integer(required=True, description="ID of the campaign associated with the update"),
