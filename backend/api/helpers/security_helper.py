@@ -39,15 +39,9 @@ def verify_jwt(token):
 def jwt_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        """Decorator to require a valid Bearer JWT; injects user_id to view func.
-        Returns 401 with message on missing/invalid token.
-        """
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            return (
-                jsonify({"status": "error", "message": "Authorization header missing"}),
-                401,
-            )
+            return {"status": "error", "message": "Authorization header missing"}, 401
 
         token = auth_header.split(" ")[1]
 
@@ -55,7 +49,7 @@ def jwt_required(f):
             payload = verify_jwt(token)
             return f(user_id=payload["user_id"], *args, **kwargs)
         except ValueError as e:
-            return jsonify({"status": "error", "message": str(e)}), 401
+            return {"status": "error", "message": str(e)}, 401
 
     return decorated_function
 

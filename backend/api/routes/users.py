@@ -16,7 +16,7 @@ class LoginUser(Resource):
             attempted_user = Users.query.filter_by(username = data['username']).first()
 
             if not data['username'] or not data['password']:
-                return {"Error" : "Username or password required"}, 400
+                return {"Error" : "Username or password missing"}, 400
             
             if not attempted_user or not attempted_user.checkHashedPassword(data['password']):
                 return {"Error" : "Incorrect username or password"}, 401
@@ -42,7 +42,7 @@ class LoginUser(Resource):
 class UserLogout(Resource):
     @jwt_required
     @users_ns.doc('User logout')
-    def post(self):
+    def post(self, user_id=None, **kwargs):
         return {"Sucess" : "User succesfully logged out"}, 200
 
 

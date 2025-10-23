@@ -7,13 +7,24 @@ from configparser import ConfigParser
 from flask_cors import CORS
 from api.routes.rag import chat_ns  #in RAG folder so created diiferent namespace
 
+authorizations = {
+    'bearer authorizations':
+    {
+        'type' : 'apiKey',
+        'in' : 'header',
+        'name' : 'Authorization',
+        'description' : '*Bearer* <type your bearer token here>'
+    }
+}
 
 app = Flask(__name__)
 api = Api(
     app,
     version='1.0',
     title="Crowdfunding platform",
-    description="Api for crowdfunding platform"
+    description="Api for crowdfunding platform",
+    authorizations=authorizations,
+    security='bearer authorizations' #this makes sure that we dont need to authorize for every route every time
 )
 
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
