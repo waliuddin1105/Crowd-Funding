@@ -42,7 +42,7 @@ class LoginUser(Resource):
 class UserLogout(Resource):
     @jwt_required
     @users_ns.doc('User logout')
-    def post(self, user_id=None, **kwargs):
+    def post(self):
         return {"Sucess" : "User succesfully logged out"}, 200
 
 

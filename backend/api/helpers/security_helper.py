@@ -36,6 +36,8 @@ def verify_jwt(token):
         raise ValueError("Invalid token")
 
 
+from flask import g
+
 def jwt_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -47,11 +49,13 @@ def jwt_required(f):
 
         try:
             payload = verify_jwt(token)
-            return f(user_id=payload["user_id"], *args, **kwargs)
+            g.user_id = payload["user_id"]  # store in flask.g
+            return f(*args, **kwargs)
         except ValueError as e:
             return {"status": "error", "message": str(e)}, 401
 
     return decorated_function
+
 
 
 def admin_required(f):
