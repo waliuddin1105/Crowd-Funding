@@ -134,7 +134,8 @@ class UpdateUserProfile(Resource):
             user_to_update.username = new_username
             user_to_update.role = new_role
             user_to_update.profile_image = new_profile_image
-
+            user_to_update.updated_at = db.func.current_timestamp()
+            
             db.session.commit()
 
             return {
