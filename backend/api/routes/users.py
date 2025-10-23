@@ -81,3 +81,25 @@ class RegisterUser(Resource):
             "user_id" : new_user.user_id
         }, 200
         
+#users/profile
+@users_ns.route('/profile/<int:user_id>')
+class GetUserProfile(Resource):
+    @users_ns.doc("Get user profile")
+    @jwt_required
+    def get(self, user_id):
+        attempted_user = Users.query.filter_by(user_id = user_id).first()
+
+        if not attempted_user:
+            return {"Error" : "User does not exist!"}, 404
+        
+        return {
+            "success" : True,
+            "user" : {
+                "user_id" : attempted_user.user_id,
+                "username" : attempted_user.username,
+                "email" : attempted_user.email,
+                "role" : attempted_user.role.value,
+                "profile_image" : attempted_user.profile_image
+            }
+        }, 200
+
