@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from configparser import ConfigParser
 from flask_cors import CORS
-from api.routes.rag import chat_ns
+from api.routes.rag import chat_ns  #in RAG folder so created diiferent namespace
 
 
 app = Flask(__name__)

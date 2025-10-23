@@ -1,13 +1,13 @@
-from api import users_ns
+from api import users_ns, db, bcrypt
 from flask import request
 from flask_restx import Resource
 from api.fields.usersFields import users_data
 from api.models.cf_models import Users
-from api.helpers.security_helper import generate_jwt
+from api.helpers.security_helper import generate_jwt, jwt_required
 
 #/users/login
 @users_ns.route('/login')
-class loginUser(Resource):
+class LoginUser(Resource):
     @users_ns.doc('Login a user')
     @users_ns.expect(users_data)
     def post(self):
@@ -21,7 +21,7 @@ class loginUser(Resource):
             if not attempted_user or not attempted_user.checkHashedPassword(data['password']):
                 return {"Error" : "Incorrect username or password"}, 401
             
-            access_token = generate_jwt(attempted_user.user_id, attempted_user.role)
+            access_token = generate_jwt(attempted_user.user_id, attempted_user.role.value)
 
             return {
                 "Success" : "User login succesful!",
@@ -29,15 +29,55 @@ class loginUser(Resource):
                 "user" : {
                     "user_id" : attempted_user.user_id,
                     "username" : attempted_user.username,
-                    "user role" : attempted_user.role
+                    "user role" : attempted_user.role.value
                 }
             }, 200
          
         except Exception as e:
-            return {"Error", f"Unexpected error {str(e)}"}, 500
+            return {"Error": f"Unexpected error {str(e)}"}, 500
 
 
 #/users/logout
+@users_ns.route('/logout')
+class UserLogout(Resource):
+    @jwt_required
+    @users_ns.doc('User logout')
+    def post(self):
+        return {"Sucess" : "User succesfully logged out"}, 200
 
 
+#/users/register
+@users_ns.route('/register')
+class RegisterUser(Resource):
+    @users_ns.doc('Register a user')
+    @users_ns.expect(users_data)
+    def post(self):
+        data = request.json
 
+        if not data['username']:
+            return {"Error" : "Please enter a username"}, 400
+        if not data['email']:
+            return {"Error" : "Please enter a valid email address"}, 400
+        if not data['password']:
+            return {"Error" : "Please enter a valid password"}, 400
+        role = data.get('role')
+        if not role or role.lower() not in ['donor', 'creator', 'admin']:
+            return {"Error" : "Please select a valid user role"}, 400
+        
+        if Users.query.filter_by(username = data['username']).first():
+            return {"Error" : "Username already exists! Please choose a unique username"}, 400
+        if Users.query.filter_by(email = data ['email']).first():
+            return {"Error" : "An existing account is already associated with the provided email"}, 400
+
+        new_user = Users(username = data['username'], email = data['email'], role = data['role'])
+        new_user.setPasswordHash(data['password'])
+        new_user.profile_image = data.get('profile_image', None)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return {
+            "Success" : "User registered succesfully!",
+            "user_id" : new_user.user_id
+        }, 200
+        
