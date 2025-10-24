@@ -81,12 +81,13 @@ class RegisterUser(Resource):
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
         
-#users/profile  -> get user profile
+#users/profile  -> get user profile, mainly for testing
 @users_ns.route('/profile')
 class GetUserProfile(Resource):
     @users_ns.doc("Get user profile")
-    @jwt_required
-    def get(self, user_id):
+    @users_ns.param('user_id')
+    # @jwt_required
+    def get(self):
         try:
             user_id = request.args.get("user_id")
             attempted_user = Users.query.filter_by(user_id = user_id).first()
