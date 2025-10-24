@@ -13,15 +13,16 @@ class LoginUser(Resource):
     def post(self):
         try:
             data = request.json
-            attempted_user = Users.query.filter_by(username = data['username']).first()
 
-            if not data['username'] or not data['password']:
-                return {"Error" : "Username or password missing"}, 400
+            if not data['password'] or not data['email']:
+                return {"Error" : "Email or password missing"}, 400
+            
+            attempted_user = Users.query.filter_by(email = data['email']).first()
             
             if not attempted_user or not attempted_user.checkHashedPassword(data['password']):
                 return {"Error" : "Incorrect username or password"}, 401
             
-            access_token = generate_jwt(attempted_user.user_id, attempted_user.role.value)
+            access_token = generate_jwt(attempted_user.user_id, attempted_user.username, attempted_user.role.value,)
 
             return {
                 "Success" : "User login succesful!",
@@ -81,12 +82,13 @@ class RegisterUser(Resource):
             return {"Error": f"Unexpected Error {str(e)}"}, 500
         
 #users/profile  -> get user profile
-@users_ns.route('/profile/<int:user_id>')
+@users_ns.route('/profile')
 class GetUserProfile(Resource):
     @users_ns.doc("Get user profile")
     @jwt_required
     def get(self, user_id):
         try:
+            user_id = request.args.get("user_id")
             attempted_user = Users.query.filter_by(user_id = user_id).first()
 
             if not attempted_user:
@@ -147,3 +149,31 @@ class UpdateUserProfile(Resource):
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
        
+@users_ns.route('/search-user')
+class SearchByUsername(Resource):
+    @jwt_required
+    @users_ns.doc('Search by username')
+    @users_ns.param('username')
+    def get(self):
+        try:
+            username = request.args.get('username')
+
+            if not username:
+                return {"Error" :"Enter a username to search"}, 400
+            
+            matched_users = Users.query.filter(Users.username.ilike(f"%{username}%")).all()
+
+            if not matched_users:
+                return {"Error" : "No matching results for your search"}, 404
+            
+            display_users = [
+                user.to_dict() for user in matched_users
+            ]
+
+            return {
+                "Success" : "Search succesful!",
+                "users" : display_users
+            }, 200
+        except Exception as e:
+            return {"Error" : f"Unexpected Error {str(e)}"}, 500
+
