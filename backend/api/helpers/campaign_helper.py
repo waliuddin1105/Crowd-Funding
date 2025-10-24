@@ -215,7 +215,7 @@ def view_all_active_campaigns():
     """List all campaigns with ACTIVE status.
     Returns list of campaign dicts.
     """
-    campaigns = Campaigns.query.filter_by(status=CampaignStatus.ACTIVE).all()
+    campaigns = Campaigns.query.filter_by(status=CampaignStatus.active).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
@@ -230,7 +230,7 @@ def view_all_completed_campaigns():
     """List campaigns that have reached COMPLETED status.
     Returns a list of campaign dicts.
     """
-    campaigns = Campaigns.query.filter_by(status=CampaignStatus.COMPLETED).all()
+    campaigns = Campaigns.query.filter_by(status=CampaignStatus.completed).all()
     return [campaign.to_dict() for campaign in campaigns]
 
 
@@ -266,7 +266,7 @@ def get_campaign_available_amount(campaign_id):
     # Get sum of all pending and completed donations
     pending_total = db.session.query(db.func.sum(Donations.amount)).filter(
         Donations.campaign_id == campaign_id,
-        Donations.status.in_([DonationStatus.PENDING, DonationStatus.COMPLETED])
+        Donations.status.in_([DonationStatus.pending, DonationStatus.completed])
     ).scalar() or 0
 
     available = campaign.goal_amount - float(pending_total)

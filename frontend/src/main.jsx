@@ -13,6 +13,7 @@ import DonorDashboard from './pages/DonorDashboard'
 import CreatorDashboard from './pages/CreatorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import { Toaster } from './components/ui/toaster'
+import ContactUs from './pages/ContactUs'
 const route  = createBrowserRouter([
   {
     path: '/',
@@ -53,6 +54,10 @@ const route  = createBrowserRouter([
   {
     path: '/admin-dashboard',
     element: <AdminDashboard />
+  },
+  {
+    path: '/contact-us',
+    element: <ContactUs />
   }
 ])
 createRoot(document.getElementById('root')).render(

@@ -13,6 +13,7 @@ from api.models.cf_models import (
     Users,
     CampaignCategory,
     Campaigns,  
+    Comments,
     CampaignStatus,
     CampaignUpdates,
 )
@@ -135,7 +136,6 @@ class CreateCampaign(Resource):
 
             print('Campaign to add:', campaign)
 
-            # Save to DB
             db.session.add(campaign)
             db.session.commit()
 
@@ -252,18 +252,81 @@ class GetCampaignComments(Resource):
                 "error": str(e)
             }, 500
 
-
+#API: POST http://{BACKEND_URL}/campaigns/comments/{comment_id}/like
 @campaigns_ns.route('/comments/<int:comment_id>/like')
 class CommentLike(Resource):
     def post(self, comment_id):
-        """post a like on a comment"""
+        """Post a like on a comment"""
         try:
-            print('f')
-            return {"success": True}, 200
-        except ValueError as ve:
-            return {"success": False, "error": str(ve)}, 404
-        except Exception as e:
+            comment = Comments.query.filter_by(comment_id=comment_id).first()
+
+            if not comment:
+                raise ValueError(f"No comment found with id {comment_id}")
+
+            comment.likes = (comment.likes or 0) + 1
+
+            db.session.commit()
+
             return {
-                "success": False,
-                "error": str(e)
-            }, 500
+                "success": True,
+                "comment_id": comment_id,
+                "likes": comment.likes
+            }, 200
+
+        except ValueError as ve:
+            db.session.rollback()
+            return {"success": False, "error": str(ve)}, 404
+
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "error": str(e)}, 500
+
+# API: POST http://{BACKEND_URL}/campaigns/fully-funded
+@campaigns_ns.route('/fully-funded')
+class FullyFundedCampaigns(Resource): #Home.jsx
+    def get(self):
+        """Get fully funded campaigns"""
+        try:
+            campaigns = (
+                db.session.query(
+                    Campaigns.campaign_id,
+                    Campaigns.title,
+                    Campaigns.description,
+                    Campaigns.category,
+                    Campaigns.goal_amount,
+                    Campaigns.raised_amount,
+                    Campaigns.status,
+                    Campaigns.created_at,
+                    Campaigns.updated_at,
+                    Campaigns.image,
+                    Users.username.label("creator_name")
+                )
+                .join(Users, Campaigns.creator_id == Users.user_id)
+                .filter(Campaigns.status == 'completed')
+                .all()
+            )
+            
+            campaigns_list = [{
+                "campaign_id": c.campaign_id,
+                "title": c.title,
+                "description": c.description,
+                "category": c.category.value if hasattr(c.category, "value") else c.category,
+                "goal_amount": float(c.goal_amount) if c.goal_amount else 0.0,
+                "raised_amount": float(c.raised_amount) if c.raised_amount else 0.0,
+                "status": c.status.value if hasattr(c.status, "value") else c.status,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "updated_at": c.updated_at.isoformat() if c.updated_at else None,
+                "creator_name": c.creator_name,
+                "image": c.image
+            } for c in campaigns]
+
+            response = {
+                "success": True,
+                "campaigns": campaigns_list
+            }
+
+            return response, 200
+
+        except Exception as e:
+            print("Error fetching campaigns:", e)
+            return {"success": False, "error": str(e)}, 500

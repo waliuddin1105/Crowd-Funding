@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -9,8 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import Navbar from "@/components/Navbar"
 import { Link } from "react-router-dom"
 
-const categories = ["Technology", "Art", "Education", "Health", "Social Causes", "Environment", "Music", "Film"]
-
+// const categories = ["Technology", "Art", "Education", "Health", "Social Causes", "Environment", "Music", "Film"]
 const campaigns = [
   {
     id: 1,
@@ -59,8 +58,9 @@ function formatCurrency(n) {
 }
 
 export default function Home() {
+  const [campaigns,setCampaigns] = useState([])
   const [pledge, setPledge] = useState(50)
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const totals = useMemo(() => {
     return {
       totalRaised: 12_450_000,
@@ -69,7 +69,27 @@ export default function Home() {
       activeCampaigns: 1_240,
     }
   }, [])
+  
+  useEffect(() => {
+  const fetchFullyFundedCampaigns = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/campaigns/fully-funded`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setCampaigns(data.campaigns)
+        // Optional: You can also use data.count if needed
+        console.log(`Loaded ${data.count} fully-funded campaigns`)
+      } else {
+        console.error('Failed to fetch campaigns:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching fully-funded campaigns:', error)
+    }
+  }
 
+  fetchFullyFundedCampaigns()
+}, [])
   const exampleGoal = 10000
   const pledgeImpactPct = Math.min(100, Math.max(0, Math.round((Number(pledge || 0) / exampleGoal) * 100)))
 
@@ -205,7 +225,8 @@ export default function Home() {
                 </Button>
               </div>
               <div className="mt-4">
-                <Progress value={pledgeImpactPct} />
+                <Progress value={pledgeImpactPct} className="bg-gray-700 [&>div]:bg-green-400"/>
+                
                 <div className="mt-2 text-sm text-gray-400">
                   Your pledge of <span className="font-medium text-white">{formatCurrency(pledge)}</span> covers
                   approximately <span className="font-medium text-white">{pledgeImpactPct}%</span> of a{" "}
@@ -248,7 +269,7 @@ export default function Home() {
             </div>
             <div className="mt-6 flex gap-4 overflow-x-auto">
               {campaigns.map((p) => {
-                const pct = Math.min(100, Math.round((p.raised / p.goal) * 100))
+                const pct = Math.min(100, Math.round((p.raised_amount / p.goal_amount) * 100))
                 return (
                   <figure key={p.id} className="shrink-0 w-72 rounded-lg border border-gray-800 bg-gray-900">
                     <div className="aspect-[16/9] w-full overflow-hidden rounded-t-lg bg-gray-800">
@@ -265,10 +286,13 @@ export default function Home() {
                       </div>
                       <div className="mt-2 font-medium">{p.title}</div>
                       <div className="mt-3">
-                        <Progress value={pct} />
+                        <Progress
+                          value={pct}
+                          className="bg-gray-700 [&>div]:bg-green-400"
+                        />
                         <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                          <span className="font-medium text-white">{formatCurrency(p.raised)}</span>
-                          <span>of {formatCurrency(p.goal)}</span>
+                          <span className="font-medium text-white">{formatCurrency(p.raised_amount)}</span>
+                          <span>of {formatCurrency(p.goal_amount)}</span>
                         </div>
                       </div>
                     </figcaption>

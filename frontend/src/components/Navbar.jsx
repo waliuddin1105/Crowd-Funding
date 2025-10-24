@@ -82,7 +82,7 @@ export default function Navbar() {
               <nav className="mt-4 flex flex-col gap-3">
                 <a href="/" className="text-sm font-medium hover:text-primary">Home</a>
                 <Link to={'/all-campaigns'} className="text-sm font-medium hover:text-primary" />Explore Campaigns
-                <a href="/contact" className="text-sm font-medium hover:text-primary">Contact</a>
+                <a href="/contact-us" className="text-sm font-medium hover:text-primary">Contact</a>
 
                 <div className="mt-4">
                   <Input placeholder="Search..." className="w-full text-black" />
@@ -127,7 +127,7 @@ export default function Navbar() {
           <a href="/" className="text-sm font-medium hover:text-primary">Home</a>
           <Link to={"/all-campaigns"} className="text-sm font-medium hover:text-primary" >All Campaigns</Link>
 
-          <a href="/contact" className="text-sm font-medium hover:text-primary">Contact</a>
+          <a href="/contact-us" className="text-sm font-medium hover:text-primary">Contact</a>
         </nav>
 
         {/* Right: Actions */}

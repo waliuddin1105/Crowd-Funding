@@ -253,13 +253,13 @@ export default function CreateCampaign() {
                                                 name="end_date"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-gray-300">End Date</FormLabel>
+                                                        <FormLabel className="text-black-300">End Date</FormLabel>
                                                         <Popover>
                                                             <PopoverTrigger asChild>
                                                                 <FormControl>
                                                                     <Button
                                                                         variant="outline"
-                                                                        className="w-full bg-gray-900 border-gray-700 text-gray-100 hover:bg-gray-700"
+                                                                        className="w-full bg-gray-900 border-gray-700 text-black-100 hover:bg-gray-700"
                                                                     >
                                                                         {field.value
                                                                             ? format(field.value, "PPP")
@@ -268,7 +268,7 @@ export default function CreateCampaign() {
                                                                     </Button>
                                                                 </FormControl>
                                                             </PopoverTrigger>
-                                                            <PopoverContent className="bg-gray-800 border border-gray-700 text-gray-100">
+                                                            <PopoverContent className="bg-gray-800 border border-gray-700 text-grey">
                                                                 <Calendar
                                                                     mode="single"
                                                                     selected={field.value}
