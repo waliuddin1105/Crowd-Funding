@@ -73,4 +73,5 @@ except Exception as e:
 
 
 import api.models.cf_models
-import api.routes.users
+import api.routes.usersRoutes
+import api.routes.donationsRoutes

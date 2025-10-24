@@ -75,12 +75,12 @@ class RegisterUser(Resource):
 
             return {
                 "Success" : "User registered succesfully!",
-                "user_id" : new_user.user_id
+                "user_id" : new_user.to_dict()
             }, 200
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
         
-#users/profile  ->`get user profile
+#users/profile  -> get user profile
 @users_ns.route('/profile/<int:user_id>')
 class GetUserProfile(Resource):
     @users_ns.doc("Get user profile")

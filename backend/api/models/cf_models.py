@@ -33,10 +33,6 @@ class CampaignStatus(Enum):
 
 class CampaignCategory(Enum):
     education = "education"
-    healthcare = "healthcare"
-    environment = "environment"
-    animals = "animals"
-    other = "other"
     personal = "personal"
     emergency = "emergency"
     charity = "charity"
@@ -90,6 +86,9 @@ class Users(db.Model):
     liked_comments = db.relationship(
     "Comments", secondary=user_comment_likes, back_populates="liked_by_users"
     )
+    liked_comments = db.relationship(
+    "Comments", secondary=user_comment_likes, back_populates="liked_by_users"
+    )
 
 class Campaigns(db.Model):
     __tablename__ = "campaigns"
@@ -101,8 +100,10 @@ class Campaigns(db.Model):
     category = db.Column(db.Enum(CampaignCategory), nullable=False)
     goal_amount = db.Column(db.Numeric(10, 2), nullable=False)
     raised_amount = db.Column(db.Numeric(10, 2), default=0)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
     image = db.Column(db.String(100),nullable=False)
-    status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.PENDING)
+    status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -138,10 +139,10 @@ class Campaigns(db.Model):
             "goal_amount": float(self.goal_amount),
             "raised_amount": float(self.raised_amount),
             "image": self.image,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
             "status": self.status.value,
-            "created_at": self.created_at,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "creator": (
                 {
                     "user_id": self.creator.user_id,
@@ -156,6 +157,7 @@ class Campaigns(db.Model):
 
 class Comments(db.Model):
     __tablename__ = "comments"
+    
     
     comment_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(
@@ -245,8 +247,7 @@ class Donations(db.Model):
     )
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.Enum(DonationStatus), default=DonationStatus.PENDING)
-    
+    status = db.Column(db.Enum(DonationStatus), default=DonationStatus.pending)
     user = db.relationship(
         "Users",
         backref=db.backref("donations", lazy=True, cascade="all, delete-orphan"),
