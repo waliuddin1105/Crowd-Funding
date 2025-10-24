@@ -2,7 +2,7 @@ from api import db, bcrypt
 from api.models.cf_models import (
     Users,
     CampaignCategory,
-    Campaigns,
+    Campaigns,  
     CampaignStatus,
     CampaignUpdates,
 )
@@ -11,30 +11,38 @@ from sqlalchemy.exc import IntegrityError
 
 
 def create_campaign(
-    creator_id, title, description, goal_amount, image, category, raised_amount, start_date, end_date, status='Pending'
+    creator_id, title, description, goal_amount, image, category, raised_amount, start_date, end_date, status='pending'
 ):
     """Create a new campaign and return it as a dict.
     Validates category and status enums.
     """
     try:
+        start_date = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_date = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+        try:
+            category_enum = CampaignCategory(category.strip().lower())
+        except ValueError:
+            raise ValueError(f"Invalid category '{category}'")
+
+        try:
+            status_enum = CampaignStatus(status.strip().lower())
+        except ValueError:
+            raise ValueError(f"Invalid status '{status}'")
+        print('inside create campaign helper')
+        float_goal_amount = float(goal_amount)
         campaign = Campaigns(
             creator_id=creator_id,
             title=title,
             description=description,
             image=image,
-            category=(
-                category
-                if isinstance(category, CampaignCategory)
-                else CampaignCategory(category)
-            ),
-            goal_amount=goal_amount,
-            status=(
-                status if isinstance(status, CampaignStatus) else CampaignStatus(status)
-            ),
+            category=category_enum,
+            goal_amount=float_goal_amount,
+            status=status_enum,
             raised_amount=raised_amount,
             start_date=start_date,
             end_date=end_date
         )
+        print('campaign to add: ',campaign)
         db.session.add(campaign)
         db.session.commit()
         return campaign.to_dict()

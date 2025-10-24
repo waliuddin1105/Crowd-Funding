@@ -141,7 +141,7 @@ export default function Navbar() {
 
           {user?.isLoggedIn ? (
             <>
-              <a href={dashboard.href} className="hidden md:inline-block text-sm font-medium hover:text-white">
+              <a href={dashboard.href + '-dashboard'} className="hidden md:inline-block text-sm font-medium hover:text-white">
                 {dashboard.label}
               </a>
               <DropdownMenu>

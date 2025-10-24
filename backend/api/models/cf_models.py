@@ -12,37 +12,38 @@ user_comment_likes = db.Table(
 
 
 class DonationStatus(Enum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    REFUNDED = "refunded"
-    CANCELLED = "cancelled"
+    pending = "pending"
+    completed = "completed"
+    refunded = "refunded"
+    cancelled = "cancelled"
 
 
 class UserRole(Enum):
-    DONOR = "donor"
-    CREATOR = "creator"
-    ADMIN = "admin"
+    donor = "donor"
+    creator = "creator"
+    admin = "admin"
 
 
 class CampaignStatus(Enum):
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    PENDING = "pending"
-    REJECTED = "rejected"
+    active = "active"
+    completed = "completed"
+    pending = "pending"
+    rejected = "rejected"
 
 
 class CampaignCategory(Enum):
-    EDUCATION = "education"
-    PERSONAL = "personal"
-    EMERGENCY = "emergency"
-    CHARITY = "charity"
-    MEDICAL= "medical"
+    education = "education"
+    personal = "personal"
+    emergency = "emergency"
+    charity = "charity"
+    medical = "medical"
+
 
 class CampaignPaymentStatus(Enum):
-    PENDING = "pending"
-    SUCCESSFUL = "successful"
-    FAILED = "failed"
-    REFUNDED = "refunded"
+    pending = "pending"
+    successful = "successful"
+    failed = "failed"
+    refunded = "refunded"
 
 
 class Users(db.Model):
@@ -90,8 +91,10 @@ class Campaigns(db.Model):
     category = db.Column(db.Enum(CampaignCategory), nullable=False)
     goal_amount = db.Column(db.Numeric(10, 2), nullable=False)
     raised_amount = db.Column(db.Numeric(10, 2), default=0)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
     image = db.Column(db.String(100),nullable=False)
-    status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.PENDING)
+    status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -122,16 +125,15 @@ class Campaigns(db.Model):
         return {
             "campaign_id": self.campaign_id,
             "title": self.title,
-            "short_description": self.short_description,
-            "long_description": self.long_description,
+            "description": self.description,
             "category": self.category.value,
             "goal_amount": float(self.goal_amount),
             "raised_amount": float(self.raised_amount),
             "image": self.image,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
             "status": self.status.value,
-            "created_at": self.created_at,
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "creator": (
                 {
                     "user_id": self.creator.user_id,
@@ -248,7 +250,7 @@ class Donations(db.Model):
     )
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.Enum(DonationStatus), default=DonationStatus.PENDING)
+    status = db.Column(db.Enum(DonationStatus), default=DonationStatus.pending)
     user = db.relationship(
         "Users",
         backref=db.backref("donations", lazy=True, cascade="all, delete-orphan"),
@@ -362,8 +364,8 @@ class AdminReviews(db.Model):
     def to_dict(self):
         return {
             "review_id": self.review_id,
-            "decision": self.decision.value if self.decision else None,
-            "comments": self.reason,
+            "decision": self.decision,
+            "comments": self.comments,
             "reviewed_at": self.reviewed_at,
             "admin": (
                 {"user_id": self.admin.user_id, "username": self.admin.username}
@@ -376,5 +378,3 @@ class AdminReviews(db.Model):
                 else None
             ),
         }
-
-
