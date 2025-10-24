@@ -12,10 +12,10 @@ user_comment_likes = db.Table(
 
 
 class DonationStatus(Enum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    REFUNDED = "refunded"
-    CANCELLED = "cancelled"
+    pending = "pending"
+    completed = "completed"
+    refunded = "refunded"
+    cancelled = "cancelled"
 
 
 class UserRole(Enum):
@@ -25,29 +25,29 @@ class UserRole(Enum):
 
 
 class CampaignStatus(Enum):
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    PENDING = "pending"
-    REJECTED = "rejected"
+    active = "active"
+    completed = "completed"
+    pending = "pending"
+    rejected = "rejected"
 
 
 class CampaignCategory(Enum):
-    EDUCATION = "education"
-    HEALTHCARE = "healthcare"
-    ENVIRONMENT = "environment"
-    ANIMALS = "animals"
-    OTHER = "other"
-    PERSONAL = "personal"
-    EMERGENCY = "emergency"
-    CHARITY = "charity"
-    MEDICAL = "medical"
+    education = "education"
+    healthcare = "healthcare"
+    environment = "environment"
+    animals = "animals"
+    other = "other"
+    personal = "personal"
+    emergency = "emergency"
+    charity = "charity"
+    medical = "medical"
 
 
 class CampaignPaymentStatus(Enum):
-    PENDING = "pending"
-    SUCCESSFUL = "successful"
-    FAILED = "failed"
-    REFUNDED = "refunded"
+    pending = "pending"
+    successful = "successful"
+    failed = "failed"
+    refunded = "refunded"
 
 
 class Users(db.Model):
