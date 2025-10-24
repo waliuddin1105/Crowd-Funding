@@ -1,4 +1,14 @@
-from flask_restx import Resource
+# Try to import Resource from flask_restx (preferred) or fallback to flask_restful if not available.
+try:
+    from flask_restx import Resource
+except Exception:
+    try:
+        from flask_restful import Resource  # fallback for environments without flask-restx
+    except Exception:
+        raise ImportError(
+            "Neither 'flask_restx' nor 'flask_restful' is available; "
+            "install one of them (pip install flask-restx) to use API resources."
+        )
 from api.models.cf_models import (
     Users,
     CampaignCategory,
@@ -6,18 +16,17 @@ from api.models.cf_models import (
     CampaignStatus,
     CampaignUpdates,
 )
-from flask import jsonify,request
+from flask import jsonify, request
 from api import db, campaigns_ns
 from api.models.cf_models import Campaigns, Users
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func,text
+from sqlalchemy import func, text
 from datetime import datetime
 from ..helpers import campaign_helper
 
 
 @campaigns_ns.route('/') # AllCampaigns.jsx
 class AllCampaigns(Resource):
-#testing completed        
     def get(self):
         """Get all campaigns with their creator's name"""
         try:
@@ -54,7 +63,6 @@ class AllCampaigns(Resource):
                 "image": c.image
             } for c in campaigns]
 
-
             response = {
                 "success": True,
                 "campaigns": campaigns_list
@@ -65,19 +73,22 @@ class AllCampaigns(Resource):
         except Exception as e:
             print("Error fetching campaigns:", e)
             return {"success": False, "error": str(e)}, 500
-        
 
-@campaigns_ns.route('/create') #CreateCampaign.jsx
+
+@campaigns_ns.route('/create')
 class CreateCampaign(Resource):
-    #testing completed 
+    def options(self):
+        """Handle CORS preflight for create campaign"""
+        return {'status': 'ok'}, 200
+    
     def post(self):
         """Create a new campaign"""
-        data = request.get_json()
-        print(data)
-
-        default_img_url = 'https://res.cloudinary.com/sajjadahmed/image/upload/v1761242807/klxazxpkipxvyxuurpaq.png'
-
         try:
+            data = request.get_json()
+            print("Received data:", data)
+
+            default_img_url = 'https://res.cloudinary.com/sajjadahmed/image/upload/v1761242807/klxazxpkipxvyxuurpaq.png'
+
             goal_amount = float(data['goal_amount'])
             image = data.get('image') or default_img_url
             category_value = data['category'].strip().lower()
@@ -93,8 +104,20 @@ class CreateCampaign(Resource):
             except ValueError:
                 return {"success": False, "error": f"Invalid status '{status_value}'"}, 400
 
-            start_date = datetime.fromisoformat(data['start_date'].replace("Z", "+00:00"))
-            end_date = datetime.fromisoformat(data['end_date'].replace("Z", "+00:00"))
+            # Handle date parsing
+            start_date_str = data['start_date']
+            end_date_str = data['end_date']
+            
+            # Remove 'Z' and parse
+            if isinstance(start_date_str, str):
+                start_date = datetime.fromisoformat(start_date_str.replace("Z", "+00:00"))
+            else:
+                start_date = start_date_str
+                
+            if isinstance(end_date_str, str):
+                end_date = datetime.fromisoformat(end_date_str.replace("Z", "+00:00"))
+            else:
+                end_date = end_date_str
 
             print('Creating campaign...')
             campaign = Campaigns(
@@ -112,7 +135,7 @@ class CreateCampaign(Resource):
 
             print('Campaign to add:', campaign)
 
-            # ✅ Save to DB
+            # Save to DB
             db.session.add(campaign)
             db.session.commit()
 
@@ -127,13 +150,12 @@ class CreateCampaign(Resource):
         except Exception as e:
             db.session.rollback()
             print('Error creating campaign:', str(e))
+            import traceback
+            traceback.print_exc()
             return {"success": False, "error": str(e)}, 500
 
 
-
-
-
-@campaigns_ns.route('/fully-funded') #for Home.jsx
+@campaigns_ns.route('/fully-funded')
 class FullyFundedCampaigns(Resource):
     def get(self):
         """return fully-funded campaigns"""
@@ -146,28 +168,44 @@ class FullyFundedCampaigns(Resource):
             }, 200
         except Exception as e:
             return {"success": False, "error": str(e)}, 500
-        
 
-@campaigns_ns.route('/<int:campaign_id>') #AdminDashBoard.jsx --delete campaign
-class DeleteCampaign(Resource):
-    def delete(self,campaign_id):
+
+@campaigns_ns.route('/<int:campaign_id>')
+class CampaignOperations(Resource):
+    def get(self, campaign_id):
+        """get campaign by id"""
         try:
-            result=campaign_helper.delete_campaign(campaign_id)
-            return{
+            campaign = campaign_helper.view_campaign_by_campaign_id(campaign_id)
+            return {
+                "success": True,
+                "campaign": campaign
+            }, 200
+        except ValueError as ve:
+            return {"success": False, "error": str(ve)}, 404
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }, 500
+    
+    def delete(self, campaign_id):
+        """Delete a campaign"""
+        try:
+            result = campaign_helper.delete_campaign(campaign_id)
+            return {
                 "success": True,
                 "message": result["message"]
-            },200
-            
+            }, 200
         except ValueError as ve:
-            return {"success": False, "error": str(ve)},404
+            return {"success": False, "error": str(ve)}, 404
         except Exception as e:
-            return {"success": False, "error": str(e)},500
+            return {"success": False, "error": str(e)}, 500
 
 
-#http://{BACKEND_URL}/campaigns?creator_id={user_id}
-@campaigns_ns.route('') #CreatorDashboard.jsx --display campaigns of creator
+@campaigns_ns.route('')
 class CreatorCampaignList(Resource):
     def get(self):
+        """Get campaigns by creator"""
         creator_id = request.args.get('creator_id')
 
         try:
@@ -183,31 +221,10 @@ class CreatorCampaignList(Resource):
                 "error": str(e)
             }, 500
 
-#GET http://{BACKEND_URL}/campaigns/{campaign_id}
-@campaigns_ns.route('/<int:campaign_id>') #CampaignDetails.jsx
-class GetCampaignByID(Resource):
-    def get(self,campaign_id):
-        """get campaign by id"""
-        try:
-            campaign = campaign_helper.view_campaign_by_campaign_id(campaign_id)
-            return {
-                "success": True,
-                "campaign": campaign
-            }
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }, 500
-        except ValueError as ve:
-            return {"success": False, "error": str(ve)}, 404
-        
-        
-#Purpose: Retrieve all comments related to a campaign
-# API: GET http://{BACKEND_URL}/campaigns/{campaign_id}/comments
+
 @campaigns_ns.route('/<int:campaign_id>/comments')
-class GetCampaignComments(Resource): #CampaignDetails.jsx
-    def get(self,campaign_id):
+class GetCampaignComments(Resource):
+    def get(self, campaign_id):
         """Get all comments of a campaign"""
         try:
             query = text("""
@@ -227,27 +244,26 @@ class GetCampaignComments(Resource): #CampaignDetails.jsx
             result = db.session.execute(query, {"campaign_id": campaign_id}).fetchall()
             comments = [dict(row._mapping) for row in result]
             return {"success": True, "comments": comments}, 200
+        except ValueError as ve:
+            return {"success": False, "error": str(ve)}, 404
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e)
             }, 500
-        except ValueError as ve:
-            return {"success": False, "error": str(ve)}, 404
 
-# Purpose: Toggle a like on a specific comment
-# API: POST http://{BACKEND_URL}/campaigns/comments/{comment_id}/like
 
 @campaigns_ns.route('/comments/<int:comment_id>/like')
 class CommentLike(Resource):
-    def post(self,comment_id):
+    def post(self, comment_id):
         """post a like on a comment"""
         try:
             print('f')
+            return {"success": True}, 200
+        except ValueError as ve:
+            return {"success": False, "error": str(ve)}, 404
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e)
             }, 500
-        except ValueError as ve:
-            return {"success": False, "error": str(ve)}, 404

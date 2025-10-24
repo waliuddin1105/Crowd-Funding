@@ -19,14 +19,52 @@ if not OPENAI_API_KEY:
 MODEL = "gpt-4o-mini"
 db_name = "vector_db"
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-print("Loading existing vector database...")
-vectorstore = Chroma(persist_directory=db_name, embedding_function=embeddings)
-print("Vector database loaded successfully!")
+# Global variables for lazy loading
+_embeddings = None
+_vectorstore = None
+_llm = None
+_retriever = None
 
-llm = ChatOpenAI(model=MODEL, api_key=OPENAI_API_KEY, temperature=0.7)
 
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+def get_embeddings():
+    """Lazy load embeddings"""
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    return _embeddings
+
+
+def get_vectorstore():
+    """Lazy load vector database"""
+    global _vectorstore
+    if _vectorstore is None:
+        print("Loading vector database...")
+        try:
+            _vectorstore = Chroma(
+                persist_directory=db_name, 
+                embedding_function=get_embeddings()
+            )
+            print("Vector database loaded successfully!")
+        except Exception as e:
+            print(f"Error loading vector database: {e}")
+            raise
+    return _vectorstore
+
+
+def get_llm():
+    """Lazy load LLM"""
+    global _llm
+    if _llm is None:
+        _llm = ChatOpenAI(model=MODEL, api_key=OPENAI_API_KEY, temperature=0.7)
+    return _llm
+
+
+def get_retriever():
+    """Lazy load retriever"""
+    global _retriever
+    if _retriever is None:
+        _retriever = get_vectorstore().as_retriever(search_kwargs={"k": 3})
+    return _retriever
 
 small_talk = {
     "hi": "Hello! How can I help you today?",
@@ -39,97 +77,88 @@ small_talk = {
 }
 
 
-def get_chatbot_response(user_message, conversation_history=None):
+def get_chatbot_response(user_message, chat_history=None):
+    """
+    Generate a chatbot response using RAG with conversation history.
+    
+    Args:
+        user_message (str): The user's current message
+        chat_history (list): List of dicts with 'role' and 'message' keys from database
+        
+    Returns:
+        str: The chatbot's response
+    """
     try:
         if not user_message or not user_message.strip():
-            return {
-                "status": "error",
-                "message": "Please provide a valid message.",
-                "error": "Empty message",
-                "conversation_history": conversation_history or [],
-            }
+            return "Please provide a valid message."
 
-        if conversation_history is None:
-            conversation_history = []
-
+        # Handle small talk directly (no need for RAG)
         if user_message.lower().strip() in small_talk:
-            bot_response = small_talk[user_message.lower().strip()]
-            updated_history = conversation_history + [
-                {"role": "user", "content": user_message},
-                {"role": "assistant", "content": bot_response},
-            ]
-            return {
-                "status": "success",
-                "message": bot_response,
-                "conversation_history": updated_history,
-            }
+            return small_talk[user_message.lower().strip()]
 
+        # Build conversation history for LangChain memory
+        memory = ConversationBufferMemory(
+            memory_key="chat_history", 
+            return_messages=True, 
+            output_key="answer"
+        )
+        
+        if chat_history:
+            for msg in chat_history:
+                if msg["role"].lower() == "user":
+                    memory.chat_memory.add_message(HumanMessage(content=msg["message"]))
+                elif msg["role"].lower() == "assistant":
+                    memory.chat_memory.add_message(AIMessage(content=msg["message"]))
+
+        # Define the QA template
         qa_template = """You are an AI assistant for a crowdfunding platform founded by Saad Zaidi, Waliuddin Ahmed, and Sajjad Ahmed - Computer Science students at FAST University.
 
-        YOUR ROLE:
-        You help users understand and navigate our crowdfunding platform where people can donate to verified causes through multiple payment methods including credit/debit cards, PayPal, EasyPaisa, and JazzCash.
+YOUR ROLE:
+You help users understand and navigate our crowdfunding platform where people can donate to verified causes through multiple payment methods including credit/debit cards, PayPal, EasyPaisa, and JazzCash.
 
-        INSTRUCTIONS:
-        - For greetings: Respond warmly and briefly
-        - For questions: Use the context below AND the conversation history to answer accurately
-        - Refer back to previous messages when relevant (e.g., "As I mentioned earlier...")
-        - If uncertain: Say "I don't have that specific information in my knowledge base"
-        - Be professional, concise, and helpful
-        - Break down complex processes into clear steps
+INSTRUCTIONS:
+- For greetings: Respond warmly and briefly
+- For questions: Use the context below AND the conversation history to answer accurately
+- Refer back to previous messages when relevant (e.g., "As I mentioned earlier...")
+- If uncertain: Say "I don't have that specific information in my knowledge base"
+- Be professional, concise, and helpful
+- Break down complex processes into clear steps
 
-        CONTEXT:
-        {context}
+CONTEXT FROM KNOWLEDGE BASE:
+{context}
 
-        CHAT HISTORY:
-        {chat_history}
+CHAT HISTORY:
+{chat_history}
 
-        QUESTION: {question}
+CURRENT QUESTION: {question}
 
-        ANSWER:"""
+ANSWER:"""
 
         QA_PROMPT = PromptTemplate(
             template=qa_template,
             input_variables=["context", "chat_history", "question"],
         )
 
-        memory = ConversationBufferMemory(
-            memory_key="chat_history", return_messages=True, output_key="answer"
-        )
+        # Get components with lazy loading
+        llm = get_llm()
+        retriever = get_retriever()
 
-        for msg in conversation_history:
-            if msg["role"] == "user":
-                memory.chat_memory.add_message(HumanMessage(content=msg["content"]))
-            elif msg["role"] == "assistant":
-                memory.chat_memory.add_message(AIMessage(content=msg["content"]))
-
+        # Create the conversational retrieval chain
         conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=retriever,
             memory=memory,
             combine_docs_chain_kwargs={"prompt": QA_PROMPT},
             return_source_documents=False,
+            verbose=False
         )
 
+        # Get response from the chain
         result = conversation_chain.invoke({"question": user_message})
-        bot_response = result["answer"]
-
-        updated_history = conversation_history + [
-            {"role": "user", "content": user_message},
-            {"role": "assistant", "content": bot_response},
-        ]
-
-        return {
-            "status": "success",
-            "message": bot_response,
-            "conversation_history": updated_history,
-        }
+        return result["answer"]
 
     except Exception as e:
-        error_msg = f"Error processing request: {str(e)}"
-        print(error_msg)
-        return {
-            "status": "error",
-            "message": "I apologize, but I encountered an error processing your request. Please try again or rephrase your question.",
-            "error": str(e),
-            "conversation_history": conversation_history or [],
-        }
+        print(f"Error in get_chatbot_response: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return "I apologize, but I encountered an error processing your request. Please try again or rephrase your question."

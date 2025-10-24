@@ -1,9 +1,9 @@
 from datetime import datetime
 from enum import Enum
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-
+from api import bcrypt
 from api import db
+
 user_comment_likes = db.Table(
     "user_comment_likes",
     db.Column("user_id", db.Integer, db.ForeignKey("users.user_id"), primary_key=True),
@@ -60,23 +60,32 @@ class Users(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    # FIXED: Added the missing relationship for liked comments
+    liked_comments = db.relationship(
+        "Comments",
+        secondary=user_comment_likes,
+        back_populates="liked_by_users",
+        lazy="dynamic"
+    )
+
     def setPasswordHash(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def checkHashedPassword(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     def to_dict(self):
-        return {
+        return {    
             "user_id": self.user_id,
             "username": self.username,
             "email": self.email,
             "role": self.role.value if self.role else None,
-            "profile_image": self.profile_image,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "profile_image": self.profile_image
         }
 
+    liked_comments = db.relationship(
+    "Comments", secondary=user_comment_likes, back_populates="liked_by_users"
+    )
     liked_comments = db.relationship(
     "Comments", secondary=user_comment_likes, back_populates="liked_by_users"
     )
@@ -126,6 +135,7 @@ class Campaigns(db.Model):
             "campaign_id": self.campaign_id,
             "title": self.title,
             "description": self.description,
+            "description": self.description,
             "category": self.category.value,
             "goal_amount": float(self.goal_amount),
             "raised_amount": float(self.raised_amount),
@@ -149,6 +159,7 @@ class Campaigns(db.Model):
 class Comments(db.Model):
     __tablename__ = "comments"
     
+    
     comment_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(
         db.Integer, db.ForeignKey("campaigns.campaign_id"), nullable=False
@@ -163,7 +174,10 @@ class Comments(db.Model):
     )
 
     liked_by_users = db.relationship(
-        "Users", secondary="user_comment_likes", back_populates="liked_comments"
+        "Users",
+        secondary=user_comment_likes,
+        back_populates="liked_comments",
+        lazy="dynamic"
     )
 
     def to_dict(self):
@@ -217,22 +231,6 @@ class Payments(db.Model):
                 {
                     "donation_id": self.donation.donation_id,
                     "amount": float(self.donation.amount),
-                    "donor": (
-                        {
-                            "user_id": self.donation.donor.user_id,
-                            "username": self.donation.donor.username,
-                        }
-                        if self.donation and self.donation.donor
-                        else None
-                    ),
-                    "campaign": (
-                        {
-                            "campaign_id": self.donation.campaign.campaign_id,
-                            "title": self.donation.campaign.title,
-                        }
-                        if self.donation and self.donation.campaign
-                        else None
-                    ),
                 }
                 if self.donation
                 else None
@@ -260,16 +258,15 @@ class Donations(db.Model):
         return {
             "donation_id": self.donation_id,
             "amount": float(self.amount),
-            "donation_date": self.donation_date,
-            "message": self.message,
+            "created_at": self.created_at,
             "status": self.status.value,
-            "donor": (
+            "user": (
                 {
-                    "user_id": self.donor.user_id,
-                    "username": self.donor.username,
-                    "profile_image": self.donor.profile_image,
+                    "user_id": self.user.user_id,
+                    "username": self.user.username,
+                    "profile_image": self.user.profile_image,
                 }
-                if self.donor
+                if self.user
                 else None
             ),
             "campaign": (
@@ -297,7 +294,7 @@ class Follows(db.Model):
     def to_dict(self):
         return {
             "follow_id": self.follow_id,
-            "followed_at": self.followed_at,
+            "created_at": self.created_at,
             "user": (
                 {
                     "user_id": self.user.user_id,
@@ -328,17 +325,11 @@ class CampaignUpdates(db.Model):
     def to_dict(self):
         return {
             "update_id": self.update_id,
-            "title": self.title,
             "content": self.content,
             "created_at": self.created_at,
             "campaign": (
                 {"campaign_id": self.campaign.campaign_id, "title": self.campaign.title}
                 if self.campaign
-                else None
-            ),
-            "user": (
-                {"user_id": self.user.user_id, "username": self.user.username}
-                if self.user
                 else None
             ),
         }
@@ -366,7 +357,7 @@ class AdminReviews(db.Model):
             "review_id": self.review_id,
             "decision": self.decision,
             "comments": self.comments,
-            "reviewed_at": self.reviewed_at,
+            "created_at": self.created_at,
             "admin": (
                 {"user_id": self.admin.user_id, "username": self.admin.username}
                 if self.admin
@@ -377,4 +368,25 @@ class AdminReviews(db.Model):
                 if self.campaign
                 else None
             ),
+        }
+
+
+class ChatHistory(db.Model):
+    __tablename__ = "chat_history"
+
+    chat_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    role = db.Column(db.String(10), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("Users", backref=db.backref("chat_history", lazy=True))
+
+    def to_dict(self):
+        return {
+            "chat_id": self.chat_id,
+            "user_id": self.user_id,
+            "role": self.role,
+            "message": self.message,
+            "timestamp": self.timestamp,
         }

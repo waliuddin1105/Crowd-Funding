@@ -72,8 +72,8 @@ export default function CreateCampaign() {
                     image: data.image,
                     category: data.category,
                     raised_amount: 0,
-                    start_date: data.start_date,
-                    end_date: data.end_date,
+                    start_date: new Date(data.start_date).toISOString(), // Convert to ISO string
+                    end_date: new Date(data.end_date).toISOString(),
                     status: "pending",
                 }),
             });

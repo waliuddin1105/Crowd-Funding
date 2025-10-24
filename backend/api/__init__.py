@@ -3,73 +3,93 @@ from flask_restx import Api, Namespace
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
-from flask_cors import CORS
 from configparser import ConfigParser
+from flask_cors import CORS
+
+authorizations = {
+    'bearer authorizations':
+    {
+        'type' : 'apiKey',
+        'in' : 'header',
+        'name' : 'Authorization',
+        'description' : '*Bearer* <type your bearer token here>'
+    }
+}
 
 app = Flask(__name__)
 
-# Configure CORS
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+# Configure CORS BEFORE creating the API
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "expose_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": False
+    }
+})
 
-# Load configuration
-config_parser = ConfigParser(interpolation=None)
-config_parser.read('config.cfg')
-app.config['SQLALCHEMY_DATABASE_URI'] = config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = config_parser.get('global', 'SECRET_KEY')
-
-# Initialize extensions
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-migrate = Migrate(app, db)
-
-# Initialize API
 api = Api(
     app,
     version='1.0',
     title="Crowdfunding platform",
-    description="Api for crowdfunding platform"
+    description="Api for crowdfunding platform",
+    authorizations=authorizations,
+    security='bearer authorizations' #this makes sure that we dont need to authorize for every route every time
 )
 
-# Create namespaces
+config_parser = ConfigParser(interpolation=None)
+config_parser.read('config.cfg')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = config_parser.get('global', 'SECRET_KEY')
+
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+migrate = Migrate(app, db)
+
 users_ns = Namespace('Users', description='Data about the users')
 campaigns_ns = Namespace('Campaigns', description="Data about the campaigns")
+donations_ns = Namespace('Donations', description='Data about the donations')
 comments_ns = Namespace('Comments', description="Data about the comments")
 payments_ns = Namespace('Payments', description='Data about the payments')
+updates_ns = Namespace('Updates', description="Data about the updates")
 donations_ns = Namespace('Donations', description='Data about the donations')
-follows_ns = Namespace('Follows', description='Data about user follows')
-campaignUpdates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
-adminReviews_ns = Namespace('Admin Reviews', description='Data about admin reviews')
+follows_ns = Namespace('Follows', description = 'Data about user follows')
+campaign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
+admin_reviews_ns = Namespace('Admin Reviews', description = 'Data about admin reviews')
+# chat_ns = Namespace('Chat', description='Data about RAG chat') # for RAG folder
 
-# Add namespaces to API
 api.add_namespace(users_ns, '/users')
 api.add_namespace(campaigns_ns, '/campaigns')
+api.add_namespace(donations_ns, '/donations')
 api.add_namespace(comments_ns, '/comments')
 api.add_namespace(payments_ns, '/payments')
+api.add_namespace(updates_ns, '/updates')
 api.add_namespace(donations_ns, '/donations')
 api.add_namespace(follows_ns, '/follows')
-api.add_namespace(campaignUpdates_ns, '/campaign-updates')
-api.add_namespace(adminReviews_ns, '/admin-reviews')
+api.add_namespace(campaign_updates_ns, '/campaign-updates')
+api.add_namespace(admin_reviews_ns,'/admin-reviews')
+# api.add_namespace(chat_ns, '/chat') #penda ne rag mei dali hoyi, ab isko chherio nh saad
 
-# Import models (must be before routes)
-import api.models.cf_models
-
-# Import routes (must be last)
-from api.routes import campaigns
-# Uncomment as you add more routes:
-# from api.routes import users
-# from api.routes import comments
-# from api.routes import payments
-# from api.routes import donations
-# from api.routes import follows
-# from api.routes import campaign_updates
-# from api.routes import admin_reviews
-
-# Test DB Connection
+# Force SQLAlchemy to configure all mappers
 try:
-    with app.app_context():
-        db.session.execute(db.text("SELECT 1"))
-    print("✅ Database connection successful!")
+    from sqlalchemy.orm import configure_mappers
+    configure_mappers()
 except Exception as e:
-    print("❌ Database connection failed:")
-    print(e)
+    print(f"Warning: Mapper configuration issue: {e}")
+    print("Continuing anyway - this might cause issues with some models")
+
+
+import api.models.cf_models
+import api.routes.users
+import api.routes.campaigns  
+# import api.routes.donations
+# import api.routes.comments
+# import api.routes.payments
+# import api.routes.updates
+# import api.routes.follows
+# import api.routes.campaign_updates
+# import api.routes.admin_reviews
+# from api.routes.rag import chat_ns  #in RAG folder so created different namespace
