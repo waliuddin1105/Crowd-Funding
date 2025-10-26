@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import Navbar from "@/components/Navbar"
 import { Link } from "react-router-dom"
-
+import axios from "axios"
 // const categories = ["Technology", "Art", "Education", "Health", "Social Causes", "Environment", "Music", "Film"]
 const campaigns = [
   {
@@ -60,15 +60,21 @@ function formatCurrency(n) {
 export default function Home() {
   const [campaigns,setCampaigns] = useState([])
   const [pledge, setPledge] = useState(50)
+  const [stats,setStats] = useState([])
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const totals = useMemo(() => {
-    return {
-      totalRaised: 12_450_000,
-      backers: 184_200,
-      successRate: 0.68,
-      activeCampaigns: 1_240,
-    }
-  }, [])
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL
+        const res = await axios.get(`${backendUrl}/campaigns/stats`);
+        setStats(res.data.stats);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
   
   useEffect(() => {
   const fetchFullyFundedCampaigns = async () => {
@@ -78,6 +84,7 @@ export default function Home() {
       
       if (data.success) {
         setCampaigns(data.campaigns)
+        
         // Optional: You can also use data.count if needed
         console.log(`Loaded ${data.count} fully-funded campaigns`)
       } else {
@@ -140,19 +147,19 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="rounded-lg border border-gray-800 p-4">
               <div className="text-sm text-gray-400">Total raised</div>
-              <div className="mt-1 text-2xl font-semibold">{formatCurrency(totals.totalRaised)}</div>
+              <div className="mt-1 text-2xl font-semibold">{formatCurrency(stats.total_raised)}</div>
             </div>
             <div className="rounded-lg border border-gray-800 p-4">
-              <div className="text-sm text-gray-400">Backers</div>
-              <div className="mt-1 text-2xl font-semibold">{totals.backers.toLocaleString()}</div>
+              <div className="text-sm text-gray-400">Donors</div>
+              <div className="mt-1 text-2xl font-semibold">{stats.total_donors}</div>
             </div>
             <div className="rounded-lg border border-gray-800 p-4">
               <div className="text-sm text-gray-400">Success rate</div>
-              <div className="mt-1 text-2xl font-semibold">{Math.round(totals.successRate * 100)}%</div>
+              <div className="mt-1 text-2xl font-semibold">{Math.round(stats.success_rate)}%</div>
             </div>
             <div className="rounded-lg border border-gray-800 p-4">
               <div className="text-sm text-gray-400">Active campaigns</div>
-              <div className="mt-1 text-2xl font-semibold">{totals.activeCampaigns.toLocaleString()}</div>
+              <div className="mt-1 text-2xl font-semibold">{stats.active_campaigns}</div>
             </div>
           </div>
         </section>
@@ -271,7 +278,7 @@ export default function Home() {
               {campaigns.map((p) => {
                 const pct = Math.min(100, Math.round((p.raised_amount / p.goal_amount) * 100))
                 return (
-                  <figure key={p.id} className="shrink-0 w-72 rounded-lg border border-gray-800 bg-gray-900">
+                  <figure key={p.campaign_id} className="shrink-0 w-72 rounded-lg border border-gray-800 bg-gray-900">
                     <div className="aspect-[16/9] w-full overflow-hidden rounded-t-lg bg-gray-800">
                       <img
                         src={p.image || "/placeholder.svg"}

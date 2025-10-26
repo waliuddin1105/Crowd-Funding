@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
 
-def create_donation(user_id, campaign_id, amount, status="PENDING"):
+def create_donation(user_id, campaign_id, amount, status="pending"):
     """Create a donation for a campaign after validating amount and campaign status.
     Returns the created donation as a dict.
     """
@@ -18,14 +18,15 @@ def create_donation(user_id, campaign_id, amount, status="PENDING"):
     except ValueError:
         raise ValueError(f"Invalid donation status: {status}")
 
-    from api.models.cf_models import Campaigns, CampaignStatus
+    from api.models.cf_models import Campaigns, CampaignStatus, Donations, DonationStatus
+    from api import db
 
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
         raise ValueError(f"Could not find campaign with campaign id: {campaign_id}")
 
     # Check if campaign is active and accepting donations
-    if campaign.status != CampaignStatus.ACTIVE:
+    if campaign.status != CampaignStatus.active:
         raise ValueError(
             f"Campaign is not active. Current status: {campaign.status.value}"
         )
@@ -35,7 +36,7 @@ def create_donation(user_id, campaign_id, amount, status="PENDING"):
         db.session.query(db.func.sum(Donations.amount))
         .filter(
             Donations.campaign_id == campaign_id,
-            Donations.status.in_([DonationStatus.PENDING, DonationStatus.COMPLETED]),
+            Donations.status.in_([DonationStatus.pending, DonationStatus.completed]),
         )
         .scalar()
         or 0

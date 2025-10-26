@@ -4,14 +4,13 @@ from functools import wraps
 from flask import current_app, request, jsonify
 
 
-def generate_jwt(user_id, role):
-    """Generate a JWT token for a user_id and role with 1 hour expiry.
-    Returns the encoded JWT as a string.
-    """
+def generate_jwt(user_id, username, role):
+    """Generate a JWT token for a user_id, username, and role with 1 hour expiry."""
     try:
         payload = {
-            "role": role,
             "user_id": user_id,
+            "username": username,
+            "role": role,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
             "iat": datetime.datetime.utcnow(),
         }

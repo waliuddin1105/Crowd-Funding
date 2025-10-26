@@ -15,7 +15,8 @@ from api.models.cf_models import (
     Campaigns,  
     Comments,
     CampaignStatus,
-    CampaignUpdates,
+    Payments,
+    CampaignUpdates
 )
 from flask import jsonify, request
 from api import db, campaigns_ns
@@ -329,4 +330,42 @@ class FullyFundedCampaigns(Resource): #Home.jsx
 
         except Exception as e:
             print("Error fetching campaigns:", e)
+            return {"success": False, "error": str(e)}, 500
+        
+@campaigns_ns.route('/stats')
+class CampaignStats(Resource):
+    def get(self):
+        try:
+            # total raised
+            total_raised = db.session.query(func.sum(Payments.amount))\
+                .filter(Payments.payment_status == 'successful').scalar() or 0
+            total_raised = float(total_raised)
+
+            # total donors
+            total_donors = db.session.query(func.count(Users.user_id))\
+                .filter(Users.role == 'donor').scalar() or 0
+
+            # success rate
+            total_campaigns = db.session.query(func.count(Campaigns.campaign_id)).scalar() or 1
+            completed_campaigns = db.session.query(func.count(Campaigns.campaign_id))\
+                .filter(Campaigns.status == "completed").scalar() or 0
+
+            success_rate = (completed_campaigns / total_campaigns) * 100
+
+            # active campaigns
+            active_campaigns = db.session.query(func.count(Campaigns.campaign_id))\
+                .filter(Campaigns.status == 'active').scalar() or 0
+
+            return {
+                "success": True,
+                "stats": {
+                    "total_raised": round(total_raised, 2),
+                    "total_donors": total_donors,
+                    "success_rate": round(success_rate, 2),
+                    "active_campaigns": active_campaigns
+                }
+            }, 200
+
+        except Exception as e:
+            db.session.rollback()
             return {"success": False, "error": str(e)}, 500

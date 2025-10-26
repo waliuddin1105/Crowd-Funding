@@ -3,7 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const UnauthorizedBox = () => {
+const UnauthorizedBox = ({message}) => {
   const navigate = useNavigate();
 
   return (
@@ -17,8 +17,7 @@ const UnauthorizedBox = () => {
           Access Denied
         </h1>
         <p className="text-gray-600 mb-6">
-          You are not authorized to view this page. Please log in with the
-          correct account or return to the homepage.
+          You are not authorized to view this page. {message? message : ''}
         </p>
 
         <div className="flex justify-center gap-3">

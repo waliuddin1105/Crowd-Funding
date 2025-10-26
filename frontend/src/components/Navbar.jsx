@@ -18,16 +18,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-const defaultUser = { isLoggedIn: 1, role: 'Donor', name: "John Doe" }
+import { getUser, logout } from "@/lib/auth.js"
 
 function getDashboardLink(role) {
   switch (role) {
-    case "Admin":
+    case "admin":
       return { href: "/admin", label: "Admin Dashboard" }
-    case "Donor":
+    case "donor":
       return { href: "/donor", label: "Donor Dashboard" }
-    case "Creator":
+    case "creator":
       return { href: "/creator", label: "Creator Dashboard" }
     default:
       return { href: "/", label: "Home" }
@@ -43,20 +42,26 @@ function getInitials(name) {
 }
 
 export default function Navbar() {
-  const [user, setUser] = useState(defaultUser)
+  const [user, setUser] = useState(null)
 
-  // Fetch user from localStorage on mount
   useEffect(() => {
-    // const storedUser = localStorage.getItem("user")
-    // if (storedUser) {
-    //   try {
-    setUser(defaultUser)
-    //   } catch (e) {
-    //     console.error("Failed to parse user from localStorage", e)
-    //     setUser(defaultUser)
-    //   }
+  const storedUser = getUser()
+  if (storedUser) {
+    try {
+      setUser(storedUser)
+    } catch (e) {
+      console.error("Failed to parse user from localStorage", e)
+      setUser(null)
+    }
   }
-    , [])
+}, [])
+
+useEffect(() => {
+  if (user) {
+    console.log(`${user.username} | ${user.role} | ${user.email}`)
+  }
+}, [user])
+
 
   const dashboard = useMemo(() => getDashboardLink(user?.role), [user?.role])
 
@@ -93,18 +98,18 @@ export default function Navbar() {
                     <a href="/create-campaign">Start a Campaign</a>
                   </Button>
 
-                  {user?.isLoggedIn ? (
+                  {user ? (
                     <>
-                      {/* <Button variant="secondary" asChild className="w-full">
+                      <Button variant="secondary" asChild className="w-full">
                         <a href={dashboard.href}>{dashboard.label}</a>
                       </Button>
                       <Button variant="outline" asChild className="w-full">
                         <a href="/settings">Profile & Settings</a>
                       </Button>
                       <Button variant="ghost" asChild className="w-full">
-                        <a href="/logout">Logout</a>
-                      </Button> */}
-                      <p>{user.name}</p>
+                        <a  >Logout</a>
+                      </Button>
+                      <p>{user?.username} | {user?.email} | {user?.role}</p>
                     </>
                   ) : (
                     <Button variant="secondary" asChild className="w-full">
@@ -118,7 +123,7 @@ export default function Navbar() {
 
           <a href="/" className="inline-flex items-center gap-2 font-semibold text-white">
             <div className="h-6 w-6 rounded bg-primary" aria-hidden="true" />
-            <span className="text-base tracking-tight">Crowdfund</span>
+            <span className="text-base tracking-tight">Crowdfund | {user?.username} | {user?.email} | {user?.role}</span>
           </a>
         </div>
 
@@ -139,7 +144,7 @@ export default function Navbar() {
 
           </Button>
 
-          {user?.isLoggedIn ? (
+          {user ? (
             <>
               <a href={dashboard.href + '-dashboard'} className="hidden md:inline-block text-sm font-medium hover:text-white">
                 {dashboard.label}
@@ -149,22 +154,27 @@ export default function Navbar() {
                   <Button variant="ghost" className="h-9 w-9 rounded-full p-0 text-black">
                     <Avatar className="h-9 w-9">
                       {user?.avatarUrl ? (
-                        <AvatarImage src={user.avatarUrl} alt={`${user.name} avatar`} />
+                        <AvatarImage src={user.profile_image} alt={`${user.username} avatar`} />
                       ) : (
-                        <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                        <AvatarFallback>{getInitials(user.username)}</AvatarFallback>
                       )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-gray-900 text-white">
                   <DropdownMenuLabel className="truncate">
-                    Signed in as <div className="font-medium">{user?.name || "User"}</div>
+                    Signed in as <div className="font-medium">{user?.username || "User"}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild><a href={dashboard.href}>{dashboard.label}</a></DropdownMenuItem>
                   <DropdownMenuItem asChild><a href="/settings">Settings</a></DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild><a href="/logout">Logout</a></DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a onClick={() => logout()} className="cursor-pointer">
+                      Logout
+                    </a>
+                </DropdownMenuItem>
+
                 </DropdownMenuContent>
               </DropdownMenu>
             </>

@@ -30,16 +30,17 @@ import {
 } from "@/components/ui/popover"
 import { toast } from "@/hooks/use-toast.js"
 import Navbar from "@/components/Navbar"
+import { getUser } from "@/lib/auth.js"
+import UnauthorizedBox from "@/components/UnauthorizedBox"
 
 const CATEGORIES = ["Medical", "Personal", "Emergency", "Charity", "Education"]
 
 export default function CreateCampaign() {
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
-
+    const [user,setUser] = useState(null)
     const form = useForm({
         defaultValues: {
-            creator_id: 4, //fetching from backend
             title: "",
             description: "",
             category: "",
@@ -51,6 +52,8 @@ export default function CreateCampaign() {
     })
     useEffect(() => {
         window.scrollTo(0, 0);
+           let storedUser = getUser()
+            setUser(storedUser)
     }, []);
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -58,14 +61,14 @@ export default function CreateCampaign() {
         setIsSubmitting(true);
         try {
             console.log("Campaign Data:", data);
-
+            const creators_id = user.user_id 
             const response = await fetch(`${backendUrl}/campaigns/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    creator_id: data.creator_id,
+                    creator_id: creators_id,
                     title: data.title,
                     description: data.description,
                     goal_amount: data.goal_amount,
@@ -111,6 +114,7 @@ export default function CreateCampaign() {
     return (
         <>
             <Navbar />
+            {user?.role == 'creator' ? 
             <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
                 {/* Header Back Button */}
                 <div className="container mx-auto px-4 max-w-6xl py-4">
@@ -382,7 +386,7 @@ export default function CreateCampaign() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </div>: <UnauthorizedBox message={'This page is only accessible to creators'}/> }
         </>
 
     )

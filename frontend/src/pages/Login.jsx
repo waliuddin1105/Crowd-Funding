@@ -4,19 +4,45 @@ import { useState } from "react"
 import { Button } from "../components/ui/button"
 import { Mail, Lock, Sparkles, ArrowRight } from "lucide-react"
 import { cn } from "../lib/utils"
+import { useNavigate } from "react-router-dom"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  async function onSubmit(e) {
+  e.preventDefault()
+  setLoading(true)
 
-  function onSubmit(e) {
-    e.preventDefault()
-    setLoading(true)
-    console.log("[SignIn] Submitted:", { email, password })
-    // simulate complete
-    setTimeout(() => setLoading(false), 600)
+  try {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const res = await fetch(`${backendUrl}/users/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    const data = await res.json()
+
+    if (res.ok) {
+      console.log("[Login Success]", data)
+      localStorage.setItem("access_token", data["access token"])
+      localStorage.setItem("user", JSON.stringify(data.user))
+      navigate('/')
+    } else {
+      alert(data.Error || "Login failed")
+    }
+  } catch (err) {
+    console.error("Error logging in:", err)
+    alert("Something went wrong. Please try again.")
+  } finally {
+    setLoading(false)
   }
+}
+
 
   return (
     <main className="min-h-screen bg-gray-900 relative overflow-hidden text-white">
