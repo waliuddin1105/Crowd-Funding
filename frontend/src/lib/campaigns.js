@@ -9,8 +9,8 @@ const campaigns = [
     goal_amount: 50000,
     raised_amount: 23500,
     image: "https://images.unsplash.com/photo-1541840031508-326b77c9a17e?w=400",
-    start_date: "2024-01-15",
-    end_date: "2024-06-15"
+    start_date: "2025-01-15",
+    end_date: "2025-06-15"
   },
   {
     campaign_id: "PK002", 
@@ -22,8 +22,8 @@ const campaigns = [
     goal_amount: 15000,
     raised_amount: 8750,
     image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400",
-    start_date: "2024-02-01",
-    end_date: "2024-04-01"
+    start_date: "2025-02-01",
+    end_date: "2025-04-01"
   },
   {
     campaign_id: "PK003",
@@ -35,8 +35,8 @@ const campaigns = [
     goal_amount: 100000,
     raised_amount: 45200,
     image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400",
-    start_date: "2024-01-01", 
-    end_date: "2024-12-31"
+    start_date: "2025-01-01", 
+    end_date: "2025-12-31"
   },
   {
     campaign_id: "PK004",
@@ -48,8 +48,8 @@ const campaigns = [
     goal_amount: 75000,
     raised_amount: 75000,
     image: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400",
-    start_date: "2024-03-10",
-    end_date: "2024-05-10"
+    start_date: "2025-03-10",
+    end_date: "2025-05-10"
   },
   {
     campaign_id: "PK005",
@@ -61,8 +61,8 @@ const campaigns = [
     goal_amount: 20000,
     raised_amount: 5500,
     image: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=400",
-    start_date: "2024-02-15",
-    end_date: "2024-08-15"
+    start_date: "2025-02-15",
+    end_date: "2025-08-15"
   }
 ];
 export default campaigns

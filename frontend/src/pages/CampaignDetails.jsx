@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
 import Navbar from "@/components/Navbar.jsx"
+import RecentDonors from "@/components/RecentDonors.jsx"
+import CampaignUpdates from "@/components/CampaignUpdates.jsx"
 
 // Mock comments data
 const mockComments = [
@@ -339,7 +341,7 @@ export default function CampaignDetails() {
               <Tabs defaultValue="details" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6">
                   <TabsTrigger value="details">Campaign Details</TabsTrigger>
-                  <TabsTrigger value="updates">Updates ({mockUpdates.length})</TabsTrigger>
+                  <TabsTrigger value="updates">Updates</TabsTrigger>
                   <TabsTrigger value="comments">Comments ({comments.length})</TabsTrigger>
                 </TabsList>
 
@@ -371,23 +373,7 @@ export default function CampaignDetails() {
 
                 {/* Updates Tab */}
                 <TabsContent value="updates">
-                  <div className="space-y-4">
-                    {mockUpdates.map((update) => (
-                      <Card key={update.id} className="shadow-md">
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <CardTitle className="text-lg">{update.title}</CardTitle>
-                            <span className="text-sm text-muted-foreground">
-                              {formatTimeAgo(update.created_at)}
-                            </span>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground">{update.content}</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  <CampaignUpdates campaign_id={id}/>
                 </TabsContent>
 
                 {/* Comments Tab */}
@@ -544,27 +530,7 @@ export default function CampaignDetails() {
                 </Card>
 
                 {/* Recent Donors Card */}
-                <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Recent Donors
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {mockDonors.map((donor, index) => (
-                        <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                          <div>
-                            <p className="font-medium text-foreground">{donor.name}</p>
-                            <p className="text-sm text-muted-foreground">{donor.time}</p>
-                          </div>
-                          <span className="font-bold text-primary">{formatCurrency(donor.amount)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <RecentDonors campaign_id={id} />
               </div>
             </div>
           </div>
