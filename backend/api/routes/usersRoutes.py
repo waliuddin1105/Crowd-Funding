@@ -26,7 +26,7 @@ class LoginUser(Resource):
 
             return {
                 "Success" : "User login succesful!",
-                "access token" : access_token,
+                "access_token" : access_token,
                 "user" :  attempted_user.to_dict()
             }, 200
          

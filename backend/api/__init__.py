@@ -85,8 +85,8 @@ except Exception as e:
 import api.models.cf_models
 import api.routes.usersRoutes
 import api.routes.campaigns  
+import api.routes.comments
 # import api.routes.donations
-# import api.routes.comments
 # import api.routes.payments
 # import api.routes.updates
 # import api.routes.follows

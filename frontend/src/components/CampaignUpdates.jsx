@@ -34,28 +34,56 @@ const formatTimeAgo = (dateString) => {
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
     return `${Math.floor(diffInSeconds / 86400)} days ago`
-  }
-function CampaignUpdates({ campaign_id }) {
+}
+function CampaignUpdates({ campaign_id, creator_name }) {
+    const [updates,setUpdates] = useState([])
+
+useEffect(() => {
+  const fetchUpdates = async () => {
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const response = await fetch(`${backendUrl}/campaigns/get-updates/${campaign_id}`);
+      const data = await response.json(); // ✅ added 'await'
+
+      if (data.success && data.updates.length > 0) {
+        setUpdates(data.updates);
+        console.log(data.updates)
+      } else {
+        setUpdates([]); // optional fallback
+      }
+    } catch (error) {
+      console.error("Error fetching updates:", error);
+      setUpdates([]); // prevent infinite loading
+    }
+  };
+
+  fetchUpdates();
+}, []); // ✅ added dependency
+
+
     //will setup API key to fetch all updates related to this campaign
     return (
         <>
             <div className="space-y-4">
-                {mockUpdates.map((update) => (
-                    <Card key={update.id} className="shadow-md">
+                {updates.map((update) => (
+                    <Card key={update.update_id} className="shadow-md">
                         <CardHeader>
-                            <div className="flex items-start justify-between">
-                                <CardTitle className="text-lg">{update.title}</CardTitle>
+                            <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">
                                     {formatTimeAgo(update.created_at)}
+                                </span>
+                                <span className="text-sm font-medium text-gray-700">
+                                    {creator_name}
                                 </span>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">{update.content}</p>
+                            <p className="text-foreground">{update.content}</p>
                         </CardContent>
                     </Card>
                 ))}
             </div>
+
         </>
     )
 }

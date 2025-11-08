@@ -29,9 +29,9 @@ export default function Login() {
 
     if (res.ok) {
       console.log("[Login Success]", data)
-      localStorage.setItem("access_token", data["access token"])
+      localStorage.setItem("access_token", data["access_token"])
       localStorage.setItem("user", JSON.stringify(data.user))
-      navigate('/')
+      navigate(`/${data.user.role}-dashboard`)
     } else {
       alert(data.Error || "Login failed")
     }

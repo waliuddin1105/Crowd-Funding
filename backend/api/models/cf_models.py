@@ -135,7 +135,6 @@ class Campaigns(db.Model):
             "campaign_id": self.campaign_id,
             "title": self.title,
             "description": self.description,
-            "description": self.description,
             "category": self.category.value,
             "goal_amount": float(self.goal_amount),
             "raised_amount": float(self.raised_amount),
@@ -185,7 +184,7 @@ class Comments(db.Model):
             "comment_id": self.comment_id,
             "content": self.content,
             "likes": self.likes,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "user": (
                 {
                     "user_id": self.user.user_id,
@@ -326,7 +325,7 @@ class CampaignUpdates(db.Model):
         return {
             "update_id": self.update_id,
             "content": self.content,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "campaign": (
                 {"campaign_id": self.campaign.campaign_id, "title": self.campaign.title}
                 if self.campaign

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Calendar, Users, Target, Clock, ArrowLeft, Share2, Heart, MessageCircle, ThumbsUp, Send, TrendingUp } from "lucide-react"
-import mockCampaigns from "../lib/campaigns.js"
+// import mockCampaigns from "../lib/campaigns.js"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,42 +11,10 @@ import { toast } from "@/hooks/use-toast"
 import Navbar from "@/components/Navbar.jsx"
 import RecentDonors from "@/components/RecentDonors.jsx"
 import CampaignUpdates from "@/components/CampaignUpdates.jsx"
+import CampaignComments from "@/components/CampaignComments"
 
 // Mock comments data
-const mockComments = [
-  {
-    id: 1,
-    user_name: "Sarah Johnson",
-    user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    message: "This is such an amazing cause! I'm so glad I could contribute. Wishing you all the best!",
-    created_at: "2024-01-15T10:30:00Z",
-    likes: 12
-  },
-  {
-    id: 2,
-    user_name: "Michael Chen",
-    user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-    message: "Thank you for making a difference in our community. This campaign really touched my heart.",
-    created_at: "2024-01-14T15:45:00Z",
-    likes: 8
-  },
-  {
-    id: 3,
-    user_name: "Emily Rodriguez",
-    user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
-    message: "Shared this with all my friends and family. Let's help reach the goal together! 💙",
-    created_at: "2024-01-14T09:20:00Z",
-    likes: 15
-  },
-  {
-    id: 4,
-    user_name: "David Thompson",
-    user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-    message: "Keep up the great work! Every donation counts and I'm proud to support this.",
-    created_at: "2024-01-13T18:10:00Z",
-    likes: 6
-  }
-]
+
 
 // Mock recent donors
 const mockDonors = [
@@ -57,22 +25,6 @@ const mockDonors = [
   { name: "James Wilson", amount: 75, time: "2 days ago" },
 ]
 
-// Mock campaign updates
-const mockUpdates = [
-  {
-    id: 1,
-    title: "Halfway There! Thank You All!",
-    content: "We've reached 50% of our goal! Thank you to everyone who has supported us so far. Your generosity means the world.",
-    created_at: "2024-01-14T12:00:00Z"
-  },
-  {
-    id: 2,
-    title: "Campaign Launch",
-    content: "We're excited to launch this campaign and share our mission with you. Every contribution helps us get closer to our goal.",
-    created_at: "2024-01-10T09:00:00Z"
-  }
-]
-
 export default function CampaignDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -80,7 +32,6 @@ export default function CampaignDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [donationAmount, setDonationAmount] = useState("")
-  const [comments, setComments] = useState(mockComments)
   const [newComment, setNewComment] = useState("")
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [likedComments, setLikedComments] = useState(new Set())
@@ -91,13 +42,11 @@ export default function CampaignDetails() {
         setLoading(true)
         setError(null)
 
-        /* 
-        // Uncomment when backend API is ready
-        const response = await fetch(`/api/campaigns/${id}`, {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL
+        const response = await fetch(`${backendUrl}/campaigns/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         })
         
@@ -106,15 +55,11 @@ export default function CampaignDetails() {
         }
         
         const data = await response.json()
-        setCampaign(data)
-        */
+        if (data.success && data.campaign){
+          setCampaign(data.campaign)
 
-        // Mock data lookup
-        const foundCampaign = mockCampaigns.find(c => c.campaign_id === id)
-        if (!foundCampaign) {
-          throw new Error("Campaign not found")
-        }
-        setCampaign(foundCampaign)
+        } 
+
         setLoading(false)
       } catch (err) {
         console.error('Error fetching campaign:', err)
@@ -179,21 +124,6 @@ export default function CampaignDetails() {
     }, 500)
   }
 
-  const handleLikeComment = (commentId) => {
-    const newLikedComments = new Set(likedComments)
-    if (newLikedComments.has(commentId)) {
-      newLikedComments.delete(commentId)
-      setComments(comments.map(c =>
-        c.id === commentId ? { ...c, likes: c.likes - 1 } : c
-      ))
-    } else {
-      newLikedComments.add(commentId)
-      setComments(comments.map(c =>
-        c.id === commentId ? { ...c, likes: c.likes + 1 } : c
-      ))
-    }
-    setLikedComments(newLikedComments)
-  }
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString)
@@ -307,11 +237,11 @@ export default function CampaignDetails() {
               {/* Campaign Title and Description */}
               <div className="mb-8">
                 <h1 className="text-3xl font-bold text-foreground mb-4">{campaign.title}</h1>
-                <p className="text-lg text-muted-foreground mb-6">{campaign.short_description}</p>
                 <div className="prose prose-gray max-w-none">
-                  <p className="text-foreground">{campaign.long_description}</p>
+                  <p className="text-foreground">{campaign.description}</p>
                 </div>
               </div>
+
 
               {/* Campaign Stats */}
               <Card className="mb-6 shadow-md">
@@ -342,7 +272,7 @@ export default function CampaignDetails() {
                 <TabsList className="grid w-full grid-cols-3 mb-6">
                   <TabsTrigger value="details">Campaign Details</TabsTrigger>
                   <TabsTrigger value="updates">Updates</TabsTrigger>
-                  <TabsTrigger value="comments">Comments ({comments.length})</TabsTrigger>
+                  <TabsTrigger value="comments">Comments</TabsTrigger>
                 </TabsList>
 
                 {/* Campaign Details Tab */}
@@ -365,7 +295,10 @@ export default function CampaignDetails() {
                       </div>
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <Users className="h-5 w-5 text-primary" />
-                        <span>Created by {campaign.creator_id}</span>
+                        <span>
+                          Created by {campaign.creator ? campaign.creator.username : "Unknown"}
+                        </span>
+
                       </div>
                     </CardContent>
                   </Card>
@@ -373,71 +306,12 @@ export default function CampaignDetails() {
 
                 {/* Updates Tab */}
                 <TabsContent value="updates">
-                  <CampaignUpdates campaign_id={id}/>
+                  <CampaignUpdates campaign_id={id } creator_name={campaign.creator.username} />
                 </TabsContent>
 
                 {/* Comments Tab */}
                 <TabsContent value="comments">
-                  <Card className="shadow-md mb-6">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MessageCircle className="h-5 w-5 text-primary" />
-                        Leave a Comment
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Share your thoughts or words of encouragement..."
-                        className="min-h-[100px] mb-4 resize-none"
-                      />
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleSubmitComment}
-                          disabled={isSubmittingComment || !newComment.trim()}
-                          className="gap-2"
-                        >
-                          <Send className="h-4 w-4" />
-                          Post Comment
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Comments List */}
-                  <div className="space-y-4">
-                    {comments.map((comment) => (
-                      <Card key={comment.id} className="shadow-md">
-                        <CardContent className="p-6">
-                          <div className="flex gap-4">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={comment.user_avatar} alt={comment.user_name} />
-                              <AvatarFallback>{comment.user_name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold text-foreground">{comment.user_name}</h4>
-                                <span className="text-sm text-muted-foreground">
-                                  {formatTimeAgo(comment.created_at)}
-                                </span>
-                              </div>
-                              <p className="text-muted-foreground mb-3">{comment.message}</p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleLikeComment(comment.id)}
-                                className={`gap-2 ${likedComments.has(comment.id) ? 'text-primary' : ''}`}
-                              >
-                                <ThumbsUp className={`h-4 w-4 ${likedComments.has(comment.id) ? 'fill-current' : ''}`} />
-                                <span>{comment.likes}</span>
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  <CampaignComments campaign_id = {id}/>
                 </TabsContent>
               </Tabs>
             </div>

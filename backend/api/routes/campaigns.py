@@ -332,7 +332,7 @@ class FullyFundedCampaigns(Resource): #Home.jsx
             print("Error fetching campaigns:", e)
             return {"success": False, "error": str(e)}, 500
         
-@campaigns_ns.route('/stats')
+@campaigns_ns.route('/stats') #for HOme page
 class CampaignStats(Resource):
     def get(self):
         try:
@@ -368,4 +368,24 @@ class CampaignStats(Resource):
 
         except Exception as e:
             db.session.rollback()
+            return {"success": False, "error": str(e)}, 500
+
+@campaigns_ns.route('/get-updates/<int:campaign_id>')
+class GetUpdates(Resource):
+    def get(self, campaign_id):
+        try:
+            query = (
+                db.session.query(CampaignUpdates)
+                .filter(CampaignUpdates.campaign_id == campaign_id)
+                .all()
+            )
+
+            # Convert all updates to dictionary form
+            updates = [u.to_dict() for u in query]
+
+            return {"success": True, "updates": updates}, 200
+
+        except ValueError as ve:
+            return {"success": False, "error": str(ve)}, 404
+        except Exception as e:
             return {"success": False, "error": str(e)}, 500
