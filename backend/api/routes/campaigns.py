@@ -139,9 +139,6 @@ class CreateCampaign(Resource):
 
             db.session.add(campaign)
             db.session.commit()
-
-            print('Campaign added successfully!')
-
             return {
                 "success": True,
                 "message": "Campaign created successfully",

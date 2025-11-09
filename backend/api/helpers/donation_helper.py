@@ -95,7 +95,10 @@ def view_all_donations_by_campaign(campaign_id):
     """List all donations for a campaign and return as list of dicts.
     Raises ValueError if none found.
     """
-    donations = Donations.query.filter_by(campaign_id=campaign_id).all()
+    donations = Donations.query.filter(
+    (Donations.campaign_id == campaign_id) & (Donations.status == 'completed')
+    ).all()
+
     if not donations:
         raise ValueError(f"No donation found by campaign id: {campaign_id}")
 

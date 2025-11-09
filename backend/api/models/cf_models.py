@@ -257,7 +257,7 @@ class Donations(db.Model):
         return {
             "donation_id": self.donation_id,
             "amount": float(self.amount),
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat(),
             "status": self.status.value,
             "user": (
                 {

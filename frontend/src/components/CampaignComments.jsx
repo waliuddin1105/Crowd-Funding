@@ -1,96 +1,108 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageCircle, ThumbsUp, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUser } from "@/lib/auth.js";
-const mockComments = [
-    {
-        id: 1,
-        user_name: "Sarah Johnson",
-        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-        message: "This is such an amazing cause! I'm so glad I could contribute.",
-        created_at: "2024-01-15T10:30:00Z",
-        likes: 12
-    },
-    {
-        id: 2,
-        user_name: "Michael Chen",
-        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-        message: "Thank you for making a difference in our community.",
-        created_at: "2024-01-14T15:45:00Z",
-        likes: 8
-    },
-];
 
 function CampaignComments({ campaign_id }) {
-    const [comments, setComments] = useState(mockComments);
+    const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [likedComments, setLikedComments] = useState(new Set());
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(null);
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+    // ✅ Fetch comments from backend
+    const fetchComments = async () => {
+        try {
+            const res = await fetch(`${backendUrl}/comments/get-comments/${campaign_id}`);
+            const data = await res.json();
+
+            // Normalize backend data
+            const normalized = (data.comments || []).map((c) => ({
+                comment_id: c.comment_id || c.id,
+                username: c.username || c.user_name,
+                profile_image: c.profile_image || c.user_avatar,
+                content: c.content || c.message,
+                likes: c.likes ?? 0,
+                created_at: c.created_at,
+            }));
+
+            setComments(normalized);
+        } catch (err) {
+            console.error("Error fetching comments:", err);
+        }
+    };
+
+    // ✅ Get user from localStorage
     useEffect(() => {
-        const storedUser = getUser()
+        const storedUser = getUser();
         if (storedUser) {
             try {
-                setUser(storedUser)
+                setUser(storedUser);
             } catch (e) {
-                console.error("Failed to parse user from localStorage", e)
-                setUser(null)
+                console.error("Failed to parse user from localStorage", e);
+                setUser(null);
             }
         }
-    }, [])
+    }, []);
 
+    // ✅ Fetch comments when campaign_id changes
+    useEffect(() => {
+        if (campaign_id) fetchComments();
+    }, [campaign_id]);
+
+    // ✅ Post new comment
     const handleSubmitComment = async () => {
         if (!newComment.trim()) return;
         setIsSubmittingComment(true);
-        const backendUrl = import.meta.env.VITE_BACKEND_URL;
-        console.log(localStorage.getItem("access_token"))
-        const response = await fetch(`${backendUrl}/comments/post-comment/${user?.user_id}/${campaign_id}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-            body: JSON.stringify({ message: newComment }),
-        });
 
+        try {
+            await fetch(`${backendUrl}/comments/post-comment/${user?.user_id}/${campaign_id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                },
+                body: JSON.stringify({ message: newComment }),
+            });
 
-
-        const newCommentObj = {
-            id: comments.length + 1,
-            user_name: "Current User",
-            user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
-            message: newComment,
-            created_at: new Date().toISOString(),
-            likes: 0
-        };
-
-        setComments([newCommentObj, ...comments]);
-        setNewComment("");
-        setIsSubmittingComment(false);
+            await fetchComments(); // Refresh comments after posting
+            setNewComment("");
+        } catch (err) {
+            console.error("Error posting comment:", err);
+        } finally {
+            setIsSubmittingComment(false);
+        }
     };
 
-    const handleLikeComment = (id) => {
-        const newLiked = new Set(likedComments);
-        const updatedComments = comments.map((c) => {
-            if (c.id === id) {
-                if (newLiked.has(id)) {
-                    newLiked.delete(id);
-                    return { ...c, likes: c.likes - 1 };
-                } else {
-                    newLiked.add(id);
-                    return { ...c, likes: c.likes + 1 };
-                }
-            }
-            return c;
-        });
-        setLikedComments(newLiked);
-        setComments(updatedComments);
+    // ✅ Handle likes locally
+    const handleLikeComment = async (id) => {
+        if (!user) return; 
+
+        try {
+            const res = await fetch(`${backendUrl}/comments/post-like/${user.user_id}/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await res.json();
+            console.log("Updated likes:", data.likes);
+
+            await fetchComments();
+
+        } catch (err) {
+            console.error("Error liking comment:", err);
+        }
     };
 
+
+    // ✅ Time formatting
     const formatTimeAgo = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -130,36 +142,47 @@ function CampaignComments({ campaign_id }) {
             </Card>
 
             <div className="space-y-4">
-                {comments.map((comment) => (
-                    <Card key={comment.id} className="shadow-md">
-                        <CardContent className="p-6">
-                            <div className="flex gap-4">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={comment.user_avatar} alt={comment.user_name} />
-                                    <AvatarFallback>{comment.user_name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-semibold text-foreground">{comment.user_name}</h4>
-                                        <span className="text-sm text-muted-foreground">
-                                            {formatTimeAgo(comment.created_at)}
-                                        </span>
+                {comments.length === 0 ? (
+                    <p className="text-muted-foreground text-center">No comments yet. Be the first to comment!</p>
+                ) : (
+                    comments.map((comment) => (
+                        <Card key={comment.comment_id} className="shadow-md">
+                            <CardContent className="p-6">
+                                <div className="flex gap-4">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={comment.profile_image} alt={comment.username} />
+                                        <AvatarFallback>
+                                            {(comment.username || "?").charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-semibold text-foreground">{comment.username}</h4>
+                                            <span className="text-sm text-muted-foreground">
+                                                {formatTimeAgo(comment.created_at)}
+                                            </span>
+                                        </div>
+                                        <p className="text-muted-foreground mb-3">{comment.content}</p>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => user && handleLikeComment(comment.comment_id)}
+                                            className={`gap-2 ${user && likedComments.has(comment.comment_id) ? "text-primary" : ""}`}
+                                            disabled={!user}
+                                        >
+                                            <ThumbsUp
+                                                className={`h-4 w-4 ${user && likedComments.has(comment.comment_id) ? "fill-current" : ""}`}
+                                            />
+                                            <span>{comment.likes}</span>
+                                        </Button>
+
+
                                     </div>
-                                    <p className="text-muted-foreground mb-3">{comment.message}</p>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleLikeComment(comment.id)}
-                                        className={`gap-2 ${likedComments.has(comment.id) ? "text-primary" : ""}`}
-                                    >
-                                        <ThumbsUp className={`h-4 w-4 ${likedComments.has(comment.id) ? "fill-current" : ""}`} />
-                                        <span>{comment.likes}</span>
-                                    </Button>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
             </div>
         </>
     );
