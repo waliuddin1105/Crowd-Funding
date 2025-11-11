@@ -1,9 +1,10 @@
 from api import users_ns, db, bcrypt
 from flask import request
 from flask_restx import Resource
-from api.fields.usersFields import users_data
+from api.fields.usersFields import users_data, users_update_data
 from api.models.cf_models import Users
 from api.helpers.security_helper import generate_jwt, jwt_required
+from api.helpers.user_helper import search_users
 
 #/users/login
 @users_ns.route('/login')
@@ -90,6 +91,10 @@ class GetUserProfile(Resource):
     def get(self):
         try:
             user_id = request.args.get("user_id")
+
+            if not user_id:
+                return {"Error" : "user_id missing"}, 400
+            
             attempted_user = Users.query.filter_by(user_id = user_id).first()
 
             if not attempted_user:
@@ -103,37 +108,41 @@ class GetUserProfile(Resource):
             return {"Error": f"Unexpected Error {str(e)}"}, 500
 
 #users/update-profile
-@users_ns.route('/update-profile/<int:id>')
+@users_ns.route('/update-profile')
 class UpdateUserProfile(Resource):
     @jwt_required
     @users_ns.doc("Update user profile")
-    @users_ns.expect(users_data)
-    def put(self, id):
+    @users_ns.expect(users_update_data)
+    def put(self):
+        from flask import g
         try:
-            user_to_update = Users.query.get(id)
+            user_to_update = Users.query.get(g.user_id)
 
             if not user_to_update:
                 return {"Error" : "Such user does not exist"}, 404
         
             data = request.json
-            if data["username"] != "string":
-                new_username = data.get('username', user_to_update.username)
-            new_password = data.get('password', None)
-            new_role = data.get('role', None)
+            new_username = data.get('username')
+            new_password = data.get('password')
+            new_role = data.get('role')
             new_profile_image = data.get('profile_image', user_to_update.profile_image)
 
-            if Users.query.filter_by(username = new_username).first():
+            if new_username == 'string' or not new_username:
+                new_username = user_to_update.username
+            if Users.query.filter(Users.username == new_username, Users.user_id != g.user_id).first(): 
                 return {"Error" : "Username already exists! Please choose a unique username"}, 400
             
-            if not new_role or new_role == "string":    #put it here bcz we were running a check for it right here after it was assigned
+            if not new_role or new_role == "string":
                 new_role = user_to_update.role.value
-            if new_role.lower() not in ['donor', 'creator', 'admin']:
+            new_role = new_role.lower()
+            if new_role not in ['donor', 'creator', 'admin']:
                 return {"Error" : "Please select a valid user role"}, 400
             
-            if new_password:
+            if new_password and new_password != "string":
                 user_to_update.setPasswordHash(new_password)
 
-            
+            if new_profile_image == "string":
+                new_profile_image = user_to_update.profile_image
 
             user_to_update.username = new_username
             user_to_update.role = new_role
@@ -158,24 +167,12 @@ class SearchByUsername(Resource):
     @users_ns.param('username')
     def get(self):
         try:
-            username = request.args.get('username')
-
-            if not username:
-                return {"Error" :"Enter a username to search"}, 400
+            keyword = request.args.get("username")
+            if not keyword:
+                return {"Error" : "Please enter a username to search"}, 400
             
-            matched_users = Users.query.filter(Users.username.ilike(f"%{username}%")).all()
-
-            if not matched_users:
-                return {"Error" : "No matching results for your search"}, 404
-            
-            display_users = [
-                user.to_dict() for user in matched_users
-            ]
-
-            return {
-                "Success" : "Search succesful!",
-                "users" : display_users
-            }, 200
+            return search_users(keyword)
+        
         except Exception as e:
             return {"Error" : f"Unexpected Error {str(e)}"}, 500
 
