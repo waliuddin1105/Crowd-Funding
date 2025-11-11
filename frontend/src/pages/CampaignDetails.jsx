@@ -285,7 +285,7 @@ export default function CampaignDetails() {
                           className="bg-primary h-3 rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${progressPercentage}%` }}
                         ></div>
-                      </div>
+                      </div>  
                     </div>
 
                     {/* Funding Info */}
