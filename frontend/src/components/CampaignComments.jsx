@@ -84,7 +84,7 @@ function CampaignComments({ campaign_id }) {
         if (!user) return; 
 
         try {
-            const res = await fetch(`${backendUrl}/comments/post-like/${user.user_id}/${id}`, {
+            const res = await fetch(`${backendUrl}/comments/toggle-like/${user.user_id}/${id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -32,8 +32,6 @@ export default function CampaignDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [donationAmount, setDonationAmount] = useState("")
-  const [newComment, setNewComment] = useState("")
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [likedComments, setLikedComments] = useState(new Set())
 
   useEffect(() => {
@@ -88,52 +86,6 @@ export default function CampaignDetails() {
       title: "Thank you!",
       description: `Your donation of $${amount} is being processed.`,
     })
-  }
-
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) {
-      toast({
-        title: "Empty comment",
-        description: "Please write a message before submitting",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsSubmittingComment(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      const newCommentObj = {
-        id: comments.length + 1,
-        user_name: "Current User",
-        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=User",
-        message: newComment,
-        created_at: new Date().toISOString(),
-        likes: 0
-      }
-
-      setComments([newCommentObj, ...comments])
-      setNewComment("")
-      setIsSubmittingComment(false)
-
-      toast({
-        title: "Comment posted!",
-        description: "Your message has been added successfully.",
-      })
-    }, 500)
-  }
-
-
-  const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-    if (diffInSeconds < 60) return 'Just now'
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
-    return `${Math.floor(diffInSeconds / 86400)} days ago`
   }
 
   if (loading) {

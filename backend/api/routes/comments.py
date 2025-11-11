@@ -80,19 +80,39 @@ class GetComments(Resource):
 
 
 
-@comments_ns.route('/post-like/<int:user_id>/<int:comment_id>')
-class LikeHandle(Resource):
-    def post(self,user_id,comment_id):
+@comments_ns.route('/toggle-like/<int:user_id>/<int:comment_id>')
+class ToggleLike(Resource):
+    def post(self, user_id, comment_id):
         try:
-            comment = db.session.query(Comments).filter(Comments.comment_id== comment_id).first()
+            user = Users.query.get_or_404(user_id)
+            comment = Comments.query.get_or_404(comment_id)
 
-            comment.likes = (comment.likes or 0) + 1
-            print(comment.likes)
-            db.session.commit()
-            
-            return {"success": True, "likes": comment.likes}, 200
+            # Check if already liked
+            if comment in user.liked_comments:
+                # Unlike (remove)
+                user.liked_comments.remove(comment)
+                comment.likes = max((comment.likes or 1) - 1, 0)
+                db.session.commit()
+                return {
+                    "success": True,
+                    "message": "Comment unliked successfully.",
+                    "liked": False,
+                    "likes": comment.likes
+                }, 200
+            else:
+                # Like (add)
+                user.liked_comments.append(comment)
+                comment.likes = (comment.likes or 0) + 1
+                db.session.commit()
+                return {
+                    "success": True,
+                    "message": "Comment liked successfully.",
+                    "liked": True,
+                    "likes": comment.likes
+                }, 200
+
         except Exception as e:
             db.session.rollback()
             import traceback
-            traceback.print_exc() 
+            traceback.print_exc()
             return {"success": False, "error": str(e)}, 500
