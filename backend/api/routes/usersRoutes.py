@@ -20,7 +20,7 @@ class LoginUser(Resource):
             attempted_user = Users.query.filter_by(email = data['email']).first()
             
             if not attempted_user or not attempted_user.checkHashedPassword(data['password']):
-                return {"Error" : "Incorrect username or password"}, 401
+                return {"Error" : "Incorrect email or password"}, 401
             
             access_token = generate_jwt(attempted_user.user_id, attempted_user.username, attempted_user.role.value,)
 
@@ -86,7 +86,7 @@ class RegisterUser(Resource):
 class GetUserProfile(Resource):
     @users_ns.doc("Get user profile")
     @users_ns.param('user_id')
-    # @jwt_required
+    @jwt_required
     def get(self):
         try:
             user_id = request.args.get("user_id")
@@ -116,7 +116,8 @@ class UpdateUserProfile(Resource):
                 return {"Error" : "Such user does not exist"}, 404
         
             data = request.json
-            new_username = data.get('username', user_to_update.username)
+            if data["username"] != "string":
+                new_username = data.get('username', user_to_update.username)
             new_password = data.get('password', None)
             new_role = data.get('role', None)
             new_profile_image = data.get('profile_image', user_to_update.profile_image)
@@ -124,7 +125,7 @@ class UpdateUserProfile(Resource):
             if Users.query.filter_by(username = new_username).first():
                 return {"Error" : "Username already exists! Please choose a unique username"}, 400
             
-            if not new_role:    #put it here bcz we were running a check for it right here after it was assigned
+            if not new_role or new_role == "string":    #put it here bcz we were running a check for it right here after it was assigned
                 new_role = user_to_update.role.value
             if new_role.lower() not in ['donor', 'creator', 'admin']:
                 return {"Error" : "Please select a valid user role"}, 400
