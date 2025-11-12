@@ -409,7 +409,7 @@ export default function CreatorDashboard() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/campaign/${campaign.id}`)}
+                                onClick={() => navigate(`/all-campaigns/${campaign.id}`)}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>

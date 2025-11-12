@@ -1,5 +1,5 @@
 from api import db, bcrypt
-from api.models.cf_models import Donations, DonationStatus
+from api.models.cf_models import Donations,DonationStatus
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
@@ -8,6 +8,7 @@ def create_donation(user_id, campaign_id, amount, status="pending"):
     """Create a donation for a campaign after validating amount and campaign status.
     Returns the created donation as a dict.
     """
+    from api.models.cf_models import DonationStatus
     if not amount or amount <= 0:
         raise ValueError("Amount must be greater than 0")
 

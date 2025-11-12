@@ -89,7 +89,7 @@ import api.routes.comments
 import api.routes.donationsRoutes
 # import api.routes.payments
 # import api.routes.updates
-# import api.routes.follows
+import api.routes.follows
 # import api.routes.campaign_updates
 # import api.routes.admin_reviews
 # from api.routes.rag import chat_ns  #in RAG folder so created different namespace

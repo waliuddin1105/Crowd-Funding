@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { Calendar, Users, Target, Clock, ArrowLeft, Share2, Heart, MessageCircle, ThumbsUp, Send, TrendingUp } from "lucide-react"
-// import mockCampaigns from "../lib/campaigns.js"
+import { Calendar, Users, Target, Clock, ArrowLeft, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
@@ -12,18 +9,7 @@ import Navbar from "@/components/Navbar.jsx"
 import RecentDonors from "@/components/RecentDonors.jsx"
 import CampaignUpdates from "@/components/CampaignUpdates.jsx"
 import CampaignComments from "@/components/CampaignComments"
-
-// Mock comments data
-
-
-// Mock recent donors
-const mockDonors = [
-  { name: "Anonymous", amount: 500, time: "2 hours ago" },
-  { name: "Jennifer Lee", amount: 100, time: "5 hours ago" },
-  { name: "Robert Kim", amount: 250, time: "1 day ago" },
-  { name: "Maria Garcia", amount: 150, time: "1 day ago" },
-  { name: "James Wilson", amount: 75, time: "2 days ago" },
-]
+import { getUser } from "@/lib/auth.js"
 
 export default function CampaignDetails() {
   const { id } = useParams()
@@ -32,7 +18,7 @@ export default function CampaignDetails() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [donationAmount, setDonationAmount] = useState("")
-  const [likedComments, setLikedComments] = useState(new Set())
+  const [isFollowed, setIsFollowed] = useState(false);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -47,16 +33,16 @@ export default function CampaignDetails() {
             'Content-Type': 'application/json',
           }
         })
-        
+
         if (!response.ok) {
           throw new Error(`Campaign not found`)
         }
-        
+
         const data = await response.json()
-        if (data.success && data.campaign){
+        if (data.success && data.campaign) {
           setCampaign(data.campaign)
 
-        } 
+        }
 
         setLoading(false)
       } catch (err) {
@@ -71,7 +57,7 @@ export default function CampaignDetails() {
     }
   }, [id])
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     const amount = parseFloat(donationAmount)
     if (!donationAmount || isNaN(amount) || amount <= 0) {
       toast({
@@ -81,12 +67,79 @@ export default function CampaignDetails() {
       })
       return
     }
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const user = getUser()
+    const donationData = {
+      user_id: user.user_id,
+      campaign_id: id,
+      amount: amount,
+      created_at: new Date().toISOString(),
+      status: "pending"
+    };
+
+    try {
+      const response = await fetch(`${backendUrl}/donations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(donationData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Donation created successfully:', data);
+
+    } catch (error) {
+      console.error('❌ Error creating donation:', error);
+    }
+
     console.log(`Donating $${amount} to campaign ${id}`)
     toast({
       title: "Thank you!",
       description: `Your donation of $${amount} is being processed.`,
     })
   }
+
+  const handleFollowButton = async (e) => {
+    const user = getUser();
+    if (!user) {
+      alert("You need to be logged in to follow campaigns.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const res = await fetch(
+        `${backendUrl}/follows/toggle-follow/${user.user_id}/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setIsFollowed(data.action === "followed");
+      } else {
+        console.error("Error toggling follow:", data.message);
+        alert(data.message || "Failed to toggle follow");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -258,12 +311,12 @@ export default function CampaignDetails() {
 
                 {/* Updates Tab */}
                 <TabsContent value="updates">
-                  <CampaignUpdates campaign_id={id } creator_name={campaign.creator.username} />
+                  <CampaignUpdates campaign_id={id} creator_name={campaign.creator.username} />
                 </TabsContent>
 
                 {/* Comments Tab */}
                 <TabsContent value="comments">
-                  <CampaignComments campaign_id = {id}/>
+                  <CampaignComments campaign_id={id} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -285,7 +338,7 @@ export default function CampaignDetails() {
                           className="bg-primary h-3 rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${progressPercentage}%` }}
                         ></div>
-                      </div>  
+                      </div>
                     </div>
 
                     {/* Funding Info */}
@@ -345,11 +398,22 @@ export default function CampaignDetails() {
                       )}
 
                       <div className="flex gap-2">
-                        
-                        <Button variant="outline" className="flex-1 gap-2">
-                          <Heart className="h-4 w-4" />
-                          Follow
+
+                        <Button
+                          onClick={handleFollowButton}
+                          disabled={loading}
+                          className={`flex-1 gap-2 transition-colors duration-300 ${isFollowed
+                              ? "bg-red-600 text-white hover:bg-red-700"
+                              : "bg-transparent text-gray-800 border border-gray-300 hover:bg-gray-100"
+                            }`}
+                        >
+                          <Heart
+                            className={`h-4 w-4 ${isFollowed ? "text-white fill-current" : "text-red-600"
+                              }`}
+                          />
+                          {isFollowed ? "Following" : "Follow"}
                         </Button>
+
                       </div>
                     </div>
                   </CardContent>

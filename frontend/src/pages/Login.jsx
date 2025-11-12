@@ -5,44 +5,63 @@ import { Button } from "../components/ui/button"
 import { Mail, Lock, Sparkles, ArrowRight } from "lucide-react"
 import { cn } from "../lib/utils"
 import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { toast } = useToast()
+
   async function onSubmit(e) {
-  e.preventDefault()
-  setLoading(true)
+    e.preventDefault()
+    setLoading(true)
 
-  try {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
-    const res = await fetch(`${backendUrl}/users/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL
+      const res = await fetch(`${backendUrl}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (res.ok) {
-      console.log("[Login Success]", data)
-      localStorage.setItem("access_token", data["access_token"])
-      localStorage.setItem("user", JSON.stringify(data.user))
-      navigate(`/${data.user.role}-dashboard`)
-    } else {
-      alert(data.Error || "Login failed")
+      if (res.ok) {
+        console.log("[Login Success]", data)
+        localStorage.setItem("access_token", data["access_token"])
+        localStorage.setItem("user", JSON.stringify(data.user))
+
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${data.user.username}!`,
+          className: "bg-green-600 text-white border-none",
+        })
+
+        setTimeout(() => {
+          navigate(`/${data.user.role}-dashboard`)
+        }, 1200)
+      } else {
+        toast({
+          title: "Login failed",
+          description: data.Error || "Invalid email or password.",
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      console.error("Error logging in:", err)
+      toast({
+        title: "Network Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-  } catch (err) {
-    console.error("Error logging in:", err)
-    alert("Something went wrong. Please try again.")
-  } finally {
-    setLoading(false)
   }
-}
-
 
   return (
     <main className="min-h-screen bg-gray-900 relative overflow-hidden text-white">
@@ -54,7 +73,6 @@ export default function Login() {
       <div className="relative flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-xl">
           <div className="bg-gray-800/80 border border-cyan-500 rounded-xl shadow-[0_0_12px_rgba(0,255,255,0.14)] backdrop-blur-sm p-6 lg:p-8">
-            {/* Header */}
             <header className="text-center mb-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-700/20 rounded-full mb-4">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
@@ -68,7 +86,6 @@ export default function Login() {
               </p>
             </header>
 
-            {/* Form */}
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="group">
                 <label htmlFor="email" className="block text-sm font-semibold mb-1 text-gray-200">
@@ -115,7 +132,6 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between text-sm">
-               
                 <a href="/forgot" className="text-sm text-cyan-400 hover:text-cyan-300 underline-offset-4 hover:underline">
                   Forgot password?
                 </a>
@@ -137,13 +153,14 @@ export default function Login() {
                   )}
                 </Button>
               </div>
-
             </form>
 
-            {/* Footer */}
             <p className="mt-6 text-center text-xs text-gray-400">
               Don't have an account?{" "}
-              <a href="/register" className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline">
+              <a
+                href="/register"
+                className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline"
+              >
                 Create one
               </a>
             </p>

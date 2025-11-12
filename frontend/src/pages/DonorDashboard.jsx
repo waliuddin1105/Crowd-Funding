@@ -361,7 +361,7 @@ export default function DonorDashboard() {
           <TabsContent value="favorites" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Saved Campaigns</CardTitle>
+                <CardTitle>Campaigns You Follow</CardTitle>
                 <CardDescription>Quick access to campaigns you're interested in</CardDescription>
               </CardHeader>
               <CardContent>
