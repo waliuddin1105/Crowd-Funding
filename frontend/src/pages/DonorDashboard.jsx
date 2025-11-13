@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { 
   Heart, 
   DollarSign, 
@@ -23,6 +23,9 @@ import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import Navbar from "@/components/Navbar"
+import KeyStats from "@/components/Dashboards/Donor/KeyStats"
+import DonationHistory from "@/components/Dashboards/Donor/DonationHistory"
+import { getUser } from "@/lib/auth"
 
 // Mock data
 const mockDonationHistory = [
@@ -128,7 +131,7 @@ export default function DonorDashboard() {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [smsNotifications, setSmsNotifications] = useState(false)
   const [campaignUpdates, setCampaignUpdates] = useState(true)
-
+  const [user, setUser] = useState([])
   const totalDonated = mockDonationHistory
     .filter(d => d.status === "completed")
     .reduce((sum, d) => sum + d.amount, 0)
@@ -173,7 +176,10 @@ export default function DonorDashboard() {
     console.log("Downloading annual tax summary")
     // Implement tax summary download logic
   }
-
+  useEffect(() => {
+      const storedUser = getUser()
+      setUser(storedUser)
+    }, [])
   return (
     <>
     <Navbar />
@@ -186,58 +192,7 @@ export default function DonorDashboard() {
         </div>
 
         {/* Key Stats */}
-        {/* 1 KeyStats component here */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(totalDonated)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {formatCurrency(currentYearDonations)} this year
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Campaigns Supported</CardTitle>
-              <Heart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{totalCampaignsSupported}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {mockActiveCampaigns.length} currently active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Most Recent</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(recentDonation.amount)}</div>
-              <p className="text-xs text-muted-foreground mt-1 truncate">
-                {recentDonation.campaign}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Impact Score</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">4.8/5</div>
-              <p className="text-xs text-muted-foreground mt-1">Based on your contributions</p>
-            </CardContent>
-          </Card>
-        </div>
+        <KeyStats />  
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="donations" className="space-y-6">
@@ -251,70 +206,7 @@ export default function DonorDashboard() {
 
           {/* Donation History Tab */}
           <TabsContent value="donations" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Donation History</CardTitle>
-                  <CardDescription>View all your past donations and download receipts</CardDescription>
-                </div>
-                <Button onClick={downloadTaxSummary} variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Tax Summary
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockDonationHistory.map((donation) => (
-                    <div
-                      key={donation.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={donation.image}
-                          alt={donation.campaign}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                        <div>
-                          <h4 className="font-semibold text-foreground">{donation.campaign}</h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-xs px-2 py-1 rounded-full ${getCategoryStyle(donation.category)}`}>
-                              {donation.category}
-                            </span>
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(donation.date).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="font-bold text-lg text-primary">{formatCurrency(donation.amount)}</div>
-                          <Badge variant={donation.status === "completed" ? "default" : "secondary"} className="mt-1">
-                            {donation.status === "completed" ? (
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                            ) : (
-                              <Clock className="h-3 w-3 mr-1" />
-                            )}
-                            {donation.status}
-                          </Badge>
-                        </div>
-                        {donation.status === "completed" && (
-                          <Button
-                            onClick={() => downloadReceipt(donation.id)}
-                            variant="ghost"
-                            size="sm"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <DonationHistory donorId={user.user_id}/>
           </TabsContent>
 
           {/* Active Campaigns Tab */}
