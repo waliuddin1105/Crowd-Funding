@@ -26,6 +26,7 @@ import Navbar from "@/components/Navbar"
 import KeyStats from "@/components/Dashboards/Donor/KeyStats"
 import DonationHistory from "@/components/Dashboards/Donor/DonationHistory"
 import { getUser } from "@/lib/auth"
+import ActiveCampaigns from "@/components/Dashboards/Donor/ActiveCampaigns"
 
 // Mock data
 const mockDonationHistory = [
@@ -211,43 +212,7 @@ export default function DonorDashboard() {
 
           {/* Active Campaigns Tab */}
           <TabsContent value="active" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Campaigns You Support</CardTitle>
-                <CardDescription>Track the progress of campaigns you've donated to</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {mockActiveCampaigns.map((campaign) => (
-                    <div key={campaign.id} className="p-4 border rounded-lg space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-semibold text-foreground">{campaign.title}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Last update: {campaign.lastUpdate}
-                          </p>
-                        </div>
-                        <Badge variant="outline">{campaign.progress}% Funded</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        <Progress value={campaign.progress} className="h-2" />
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {formatCurrency(campaign.raisedAmount)} raised
-                          </span>
-                          <span className="text-muted-foreground">
-                            Goal: {formatCurrency(campaign.goalAmount)}
-                          </span>
-                        </div>
-                      </div>
-                      <Button variant="outline" className="w-full" size="sm">
-                        View Campaign Updates
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ActiveCampaigns />
           </TabsContent>
 
           {/* Follows Tab */}
