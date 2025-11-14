@@ -142,3 +142,41 @@ class DonationHistory(Resource):
             })
 
         return {"donation_history": response_data}, 200
+
+
+@donations_ns.route('/active-campaigns/<int:donor_id>')
+class GetActiveCampaigns(Resource):
+    def get(self, donor_id):
+        try:
+            results = (
+                db.session.query(
+                    Campaigns.campaign_id,
+                    Campaigns.title,
+                    Campaigns.goal_amount,
+                    Campaigns.raised_amount,
+                    Campaigns.status
+                )
+                .join(Donations, Donations.campaign_id == Campaigns.campaign_id)
+                .filter(
+                    Campaigns.status == CampaignStatus.active,
+                    Donations.user_id == donor_id
+                )
+                .all()
+            )
+
+            campaigns_list = [
+                {
+                    "campaign_id": r.campaign_id,
+                    "title": r.title,
+                    "goal_amount": float(r.goal_amount),
+                    "raised_amount": float(r.raised_amount),
+                    "status": r.status.value
+                }
+                for r in results
+            ]
+
+            return {"active_campaigns": campaigns_list}, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "error": str(e)}, 500

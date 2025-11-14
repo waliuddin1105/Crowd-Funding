@@ -27,6 +27,7 @@ import KeyStats from "@/components/Dashboards/Donor/KeyStats"
 import DonationHistory from "@/components/Dashboards/Donor/DonationHistory"
 import { getUser } from "@/lib/auth"
 import ActiveCampaigns from "@/components/Dashboards/Donor/ActiveCampaigns"
+import FollowingCampaigns from "@/components/Dashboards/Donor/FollowingCampaigns"
 
 // Mock data
 const mockDonationHistory = [
@@ -217,40 +218,7 @@ export default function DonorDashboard() {
 
           {/* Follows Tab */}
           <TabsContent value="favorites" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaigns You Follow</CardTitle>
-                <CardDescription>Quick access to campaigns you're interested in</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {mockFollowCampaigns.map((campaign) => (
-                    <div
-                      key={campaign.id}
-                      className="relative group overflow-hidden rounded-lg border hover:shadow-lg transition-all"
-                    >
-                      <img
-                        src={campaign.image}
-                        alt={campaign.title}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getCategoryStyle(campaign.category)}`}>
-                          {campaign.category}
-                        </span>
-                        <h4 className="font-semibold text-foreground mt-2">{campaign.title}</h4>
-                        <div className="flex gap-2 mt-3">
-                          <Button className="flex-1" size="sm">Donate Again</Button>
-                          <Button variant="outline" size="sm">
-                            <Heart className="h-4 w-4 fill-current" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <FollowingCampaigns />
           </TabsContent>
 
           {/* Payment Methods Tab */}

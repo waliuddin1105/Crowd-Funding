@@ -4,7 +4,7 @@ from api.models.cf_models import (
 )
 from flask import jsonify, request
 from api import db, follows_ns
-from api.models.cf_models import Campaigns, Users
+from api.models.cf_models import Campaigns, Users,Donations
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func, text
 from datetime import datetime
@@ -51,6 +51,51 @@ class ToggleFollowCampaign(Resource):
                 "success": False,
                 "message": "Database integrity error. Could not toggle follow."
             }, 500
+        except Exception as e:
+            db.session.rollback()
+            return {
+                "success": False,
+                "message": f"Unexpected error: {str(e)}"
+            }, 500
+
+@follows_ns.route('/get-following/<int:donor_id>')
+class FollowingList(Resource):
+    def get(self, donor_id):
+        """Get list of campaigns followed by a donor"""
+        try:
+            results = (
+                db.session.query(
+                    Campaigns.campaign_id,
+                    Campaigns.image,
+                    Campaigns.category,
+                    Campaigns.title,
+                    Campaigns.status
+                )
+                .join(Follows, Follows.campaign_id == Campaigns.campaign_id)
+                .filter(Follows.user_id == donor_id)
+                .all()
+            )
+
+            following_list = [
+                {
+                    "campaign_id": r.campaign_id,
+                    "image": r.image,
+                    "category": r.category.value,
+                    "title": r.title,
+                    "status": r.status.value
+                }
+                for r in results
+            ]
+
+            return {"following": following_list}, 200
+
+        except IntegrityError:
+            db.session.rollback()
+            return {
+                "success": False,
+                "message": "Database integrity error. Could not fetch following list."
+            }, 500
+
         except Exception as e:
             db.session.rollback()
             return {
