@@ -83,4 +83,40 @@ class displayCreatorDashboard(Resource):
         
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
+
+@creator_ns.route('campaigns') 
+class displayCreatorCampaigns(Resource):
+    @jwt_required
+    @creator_ns.doc("Displaying creator campaigns")
+    def get(self):
+        try:
+            from flask import g
+            creator = Users.query.get(g.user_id)
+
+            if not creator:
+                return {"Error" : "No such user exists"}, 400
+            
+            role = creator.role.value.lower()
+
+            if role != 'creator':
+                return {"Error" : "Nothing to show"}, 403
+            
+            campaigns = Campaigns.query.filter(
+                Campaigns.creator_id == creator.user_id, Campaigns.status == CampaignStatus.active
+                ).all()
+            
+            campaign_list = []
+            for campaign in campaigns:
+                campaign_data = campaign.to_dict()
+                campaign_data['total_donors'] = db.session.query(func.count(func.distinct(Donations.user_id)))\
+                                  .filter(Donations.campaign_id == campaign.campaign_id).scalar() or 0
+                
+                campaign_list.append(campaign_data)
+            
+        except Exception as e:
+            return {"Error": f"Unexpected Error {str(e)}"}, 500
+
+# @creator_ns.route('/recent-donations')
+# class RecenetDonation(Resource):
+
         
