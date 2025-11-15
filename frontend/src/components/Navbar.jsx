@@ -161,7 +161,7 @@ export default function Navbar() {
         </div>
 
         {/* Center: Desktop navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-14">
           <Link
             to="/"
             className="text-sm font-medium text-gray-200 hover:text-cyan-400 transition-colors relative group"

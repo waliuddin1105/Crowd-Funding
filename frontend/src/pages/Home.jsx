@@ -71,9 +71,7 @@ export default function Home() {
     <>
       <Navbar />
       <main className="font-sans bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 min-h-screen">
-        {/* Hero */}
         <section className="relative border-b border-gray-800/50 min-h-[65vh] md:min-h-[75vh] flex items-center overflow-hidden">
-          {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-emerald-900/20 animate-gradient"></div>
           
           {/* Background image */}
@@ -90,7 +88,9 @@ export default function Home() {
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-500/30 rounded-full animate-float"></div>
             <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-blue-500/30 rounded-full animate-float-delayed"></div>
+            <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-blue-500/30 rounded-full animate-float-delayed"></div>
             <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-emerald-500/30 rounded-full animate-float-slow"></div>
+            <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-emerald-500/30 rounded-full animate-float-slow"></div>
           </div>
 
           {/* Hero content */}
@@ -111,7 +111,7 @@ export default function Home() {
               <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 animate-fade-in-more-delayed">
                 <Button 
                   asChild 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
                 >
                   <Link to={"/all-campaigns"}>Explore campaigns</Link>
                 </Button>
@@ -382,7 +382,7 @@ export default function Home() {
             <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
               <Button 
                 asChild 
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-7 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-7 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
               >
                 <Link to={"/all-campaigns"}>Find inspiration</Link>
               </Button>
