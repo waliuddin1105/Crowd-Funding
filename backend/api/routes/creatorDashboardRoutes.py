@@ -24,7 +24,7 @@ class displayCreatorDashboard(Resource):
                 return {"Error" : "Nothing to show"}, 403
             
             campaigns = Campaigns.query.filter(
-                Campaigns.creator_id == creator.creator_id, Campaigns.status == CampaignStatus.active
+                Campaigns.creator_id == creator.user_id, Campaigns.status == CampaignStatus.active
                 ).all()
 
             total_raised = 0
@@ -39,7 +39,7 @@ class displayCreatorDashboard(Resource):
                 
             total_donors = db.session.query(func.count(func.distinct(Donations.user_id)))\
                     .join(Campaigns, Campaigns.campaign_id == Donations.campaign_id)\
-                    .filter(Campaigns.creator_id == creator.creator_id,
+                    .filter(Campaigns.creator_id == creator.user_id,
                             Campaigns.status == CampaignStatus.active).scalar()
             
             if not total_donors:
@@ -48,7 +48,7 @@ class displayCreatorDashboard(Resource):
             recent_donation = db.session.query(Donations)\
                             .join(Campaigns, Campaigns.campaign_id == Donations.campaign_id)\
                             .join(Users, Donations.user_id == Users.user_id)\
-                            .filter(Campaigns.creator_id == creator.creator_id,
+                            .filter(Campaigns.creator_id == creator.user_id,
                                     Campaigns.status == CampaignStatus.active)\
                             .order_by(desc(Donations.created_at)).first()
             
@@ -65,7 +65,7 @@ class displayCreatorDashboard(Resource):
             
             #assuming only finished campaigns' amount is withdrawable
             available_to_withdraw = db.session.query(db.func.sum(Campaigns.raised_amount))\
-                                    .filter(Campaigns.creator_id == creator.creator_id,
+                                    .filter(Campaigns.creator_id == creator.user_id,
                                             Campaigns.status == CampaignStatus.completed).scalar()
             if not available_to_withdraw:
                 available_to_withdraw = 0
