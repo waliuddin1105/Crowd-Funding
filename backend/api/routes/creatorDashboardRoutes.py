@@ -149,12 +149,7 @@ class RecentDonations(Resource):
             
             for donation in recent_donations:
                 donations_data = donation.to_dict()
-                donations_data['user_name']
-
-            
-
-
-
+                donations_list.append(donations_data)
             
             return {
                 "user_id" : creator.user_id,
@@ -163,6 +158,3 @@ class RecentDonations(Resource):
         
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
-
-
-
