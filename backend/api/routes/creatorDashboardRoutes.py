@@ -6,7 +6,7 @@ from api.models.cf_models import Users, Campaigns, Donations, CampaignStatus
 from sqlalchemy import func, desc
 
 @creator_ns.route('/dashboard')
-class displayCreatorDashboard(Resource):
+class DisplayCreatorDashboard(Resource):
     @jwt_required
     @creator_ns.doc('Creator Dashboard')
     def get(self):
@@ -84,8 +84,8 @@ class displayCreatorDashboard(Resource):
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
 
-@creator_ns.route('campaigns') 
-class displayCreatorCampaigns(Resource):
+@creator_ns.route('/campaigns') 
+class DisplayCreatorCampaigns(Resource):
     @jwt_required
     @creator_ns.doc("Displaying creator campaigns")
     def get(self):
@@ -105,18 +105,21 @@ class displayCreatorCampaigns(Resource):
                 Campaigns.creator_id == creator.user_id, Campaigns.status == CampaignStatus.active
                 ).all()
             
-            campaign_list = []
+            campaigns_list = []
             for campaign in campaigns:
                 campaign_data = campaign.to_dict()
                 campaign_data['total_donors'] = db.session.query(func.count(func.distinct(Donations.user_id)))\
                                   .filter(Donations.campaign_id == campaign.campaign_id).scalar() or 0
                 
-                campaign_list.append(campaign_data)
+                campaigns_list.append(campaign_data)
             
+            return {
+                "user_id" : creator.user_id,
+                "campaigns" : campaigns_list
+            }
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
 
 # @creator_ns.route('/recent-donations')
-# class RecenetDonation(Resource):
+# class RecenetDonations(Resource):
 
-        
