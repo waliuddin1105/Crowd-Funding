@@ -116,10 +116,53 @@ class DisplayCreatorCampaigns(Resource):
             return {
                 "user_id" : creator.user_id,
                 "campaigns" : campaigns_list
-            }
+            }, 200
+        
         except Exception as e:
             return {"Error": f"Unexpected Error {str(e)}"}, 500
 
-# @creator_ns.route('/recent-donations')
-# class RecenetDonations(Resource):
+@creator_ns.route('/recent-donations')
+class RecentDonations(Resource):
+    @jwt_required
+    @creator_ns.doc("View recent donations for a creator's campaign")
+    def get(self):
+        from flask import g
+        try:
+            creator = Users.query.get(g.user_id)
+
+            if not creator:
+                return {"Error" : "No such user exists"}, 400
+            
+            role = creator.role.value.lower()
+
+            if role != 'creator':
+                return {"Error" : "Nothing to show"}, 403
+            
+            donations_list = []
+            
+            recent_donations = db.session.query(Donations)\
+                            .join(Campaigns, Campaigns.campaign_id == Donations.campaign_id)\
+                            .join(Users, Donations.user_id == Users.user_id)\
+                            .filter(Campaigns.creator_id == creator.user_id,
+                                    Campaigns.status == CampaignStatus.active)\
+                            .order_by(desc(Donations.created_at)).all()
+            
+            for donation in recent_donations:
+                donations_data = donation.to_dict()
+                donations_data['user_name']
+
+            
+
+
+
+            
+            return {
+                "user_id" : creator.user_id,
+                "recent_donations" : donations_list
+            }, 200
+        
+        except Exception as e:
+            return {"Error": f"Unexpected Error {str(e)}"}, 500
+
+
 

@@ -55,6 +55,9 @@ class Users(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum(UserRole), nullable=False)
     profile_image = db.Column(db.String(255))
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    phone_number = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
