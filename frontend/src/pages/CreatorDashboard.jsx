@@ -34,6 +34,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
 import Navbar from "@/components/Navbar"
+import CreatorKeyStats from "@/components/Dashboards/Creator/CreatorKeyStats"
+import CreatorCampaigns from "@/components/Dashboards/Creator/CreatorCampaigns"
+import RecentCampaignDonations from "@/components/Dashboards/Creator/RecentCampaignDonations"
 
 // Mock data
 const mockCreatorCampaigns = [
@@ -288,76 +291,7 @@ export default function CreatorDashboard() {
         </div>
 
         {/* Key Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Total Raised
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(totalRaised)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Across all campaigns</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                Active Campaigns
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{activeCampaigns.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">Currently running</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Total Donors
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{totalDonors}</div>
-              <p className="text-xs text-muted-foreground mt-1">Supporting your cause</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Recent Donation
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {formatCurrency(mostRecentDonation.amount)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{mostRecentDonation.donor_name}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
-                Available
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {formatCurrency(totalRaised - lifetimeWithdrawals - pendingWithdrawals)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Ready to withdraw</p>
-            </CardContent>
-          </Card>
-        </div>
+        <CreatorKeyStats />
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="campaigns" className="space-y-6">
@@ -377,151 +311,15 @@ export default function CreatorDashboard() {
                 Create Campaign
               </Button>
             </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {campaigns.map((campaign) => {
-                const progress = (campaign.raised_amount / campaign.goal_amount) * 100
-                return (
-                  <Card key={campaign.id}>
-                    <CardContent className="p-6">
-                      <div className="flex gap-4">
-                        <img
-                          src={campaign.image}
-                          alt={campaign.title}
-                          className="w-32 h-32 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground mb-1">
-                                {campaign.title}
-                              </h3>
-                              <div className="flex gap-2 items-center">
-                                <Badge className={getCategoryStyle(campaign.category)}>
-                                  {campaign.category}
-                                </Badge>
-                                <Badge className={getStatusBadge(campaign.status)}>
-                                  {campaign.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/all-campaigns/${campaign.id}`)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              {campaign.status !== "completed" && (
-                                <>
-                                  
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteCampaign(campaign.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {campaign.status !== "draft" && (
-                            <>
-                              <div className="mt-4">
-                                <div className="flex justify-between text-sm mb-2">
-                                  <span className="text-muted-foreground">
-                                    {formatCurrency(campaign.raised_amount)} raised of{" "}
-                                    {formatCurrency(campaign.goal_amount)}
-                                  </span>
-                                  <span className="text-foreground font-medium">
-                                    {progress.toFixed(0)}%
-                                  </span>
-                                </div>
-                                <Progress value={progress} className="h-2" />
-                              </div>
-
-                              <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">Donors</p>
-                                  <p className="font-semibold text-foreground">
-                                    {campaign.donor_count}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Start Date</p>
-                                  <p className="font-semibold text-foreground">
-                                    {formatDate(campaign.start_date)}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">End Date</p>
-                                  <p className="font-semibold text-foreground">
-                                    {formatDate(campaign.end_date)}
-                                  </p>
-                                </div>
-                              </div>
-                            </>
-                          )}
-
-                          {campaign.status === "draft" && (
-                            <p className="text-muted-foreground text-sm mt-2">
-                              This campaign is in draft mode. Complete the setup to publish.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
+            <CreatorCampaigns />
+            
           </TabsContent>
 
           {/* Donations Tab */}
           <TabsContent value="donations" className="space-y-4">
             <h2 className="text-2xl font-semibold text-foreground">Recent Donations</h2>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {mockRecentDonations.map((donation) => (
-                    <div
-                      key={donation.id}
-                      className="flex items-center justify-between p-4 bg-muted/30 rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <Avatar>
-                          {donation.donor_avatar && !donation.is_anonymous ? (
-                            <AvatarImage src={donation.donor_avatar} alt={donation.donor_name} />
-                          ) : (
-                            <AvatarFallback>
-                              {donation.is_anonymous ? "?" : donation.donor_name.charAt(0)}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold text-foreground">{donation.donor_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {donation.campaign_title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDateTime(donation.date)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-foreground">
-                          {formatCurrency(donation.amount)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <RecentCampaignDonations />
+            
           </TabsContent>
 
           {/* Financials Tab */}
