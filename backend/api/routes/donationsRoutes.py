@@ -23,6 +23,7 @@ class Donate(Resource):
 
         except Exception as e:
             return {"success":False, "Error": f"Unexpected Error {str(e)}"}, 500
+        
 @donations_ns.route('/recent-donors/<int:campaign_id>')
 class RecentDonors(Resource):
     def get(self, campaign_id):

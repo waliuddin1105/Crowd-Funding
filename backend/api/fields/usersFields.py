@@ -13,3 +13,13 @@ users_data = users_ns.model (
         "updated_at" : fields.DateTime(required = False, description = "Last account update timestamp")
     }
 )
+
+users_update_data = users_ns.model(
+    "Users update data",
+    {
+        "username" : fields.String(required = False, default = None),
+        "password" : fields.String(required = False, default = None),
+        "role" : fields.String(required = False, default = None),
+        "profile_image" : fields.String(required = False, default = None)
+    }
+)
