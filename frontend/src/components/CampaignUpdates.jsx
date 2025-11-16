@@ -1,20 +1,6 @@
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
-const mockUpdates = [
-    {
-        id: 1,
-        title: "Halfway There! Thank You All!",
-        content: "We've reached 50% of our goal! Thank you to everyone who has supported us so far. Your generosity means the world.",
-        created_at: "2024-01-14T12:00:00Z"
-    },
-    {
-        id: 2,
-        title: "Campaign Launch",
-        content: "We're excited to launch this campaign and share our mission with you. Every contribution helps us get closer to our goal.",
-        created_at: "2024-01-10T09:00:00Z"
-    }
-]
 import React from 'react'
 const formatTimeAgo = (dateString) => {
   const dateUTC = new Date(dateString);
@@ -44,7 +30,7 @@ useEffect(() => {
         setUpdates(data.updates);
         console.log(data.updates)
       } else {
-        setUpdates([]); // optional fallback
+        setUpdates([]); 
       }
     } catch (error) {
       console.error("Error fetching updates:", error);
@@ -53,10 +39,7 @@ useEffect(() => {
   };
 
   fetchUpdates();
-}, []); // ✅ added dependency
-
-
-    //will setup API key to fetch all updates related to this campaign
+}, []);
     return (
         <>
             <div className="space-y-4">

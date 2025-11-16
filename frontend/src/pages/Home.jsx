@@ -96,11 +96,6 @@ export default function Home() {
           {/* Hero content */}
           <div className="relative mx-auto max-w-6xl px-4 py-20 z-10">
             <div className="max-w-3xl">
-              <div className="inline-block mb-4 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 backdrop-blur-sm">
-                <p className="text-sm uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 font-semibold">
-                  Crowdfunding for everyone
-                </p>
-              </div>
               <h1 className="text-5xl md:text-7xl pb-3 font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-300 animate-fade-in">
                 Fund ideas worth building.
               </h1>
@@ -158,14 +153,14 @@ export default function Home() {
             <p className="text-center text-gray-400 mb-8">Simple steps to make your dreams a reality</p>
             <Tabs defaultValue="backers" className="mt-8">
               <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-gray-900/50 border border-gray-800 rounded-xl p-1">
-                <TabsTrigger value="backers" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600">For Backers</TabsTrigger>
-                <TabsTrigger value="creators" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600">For Creators</TabsTrigger>
+                <TabsTrigger value="backers" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600"><p className="text-white"> For Donors</p></TabsTrigger>
+                <TabsTrigger value="creators" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600"><p className="text-white"> For Creators</p></TabsTrigger>
               </TabsList>
               <TabsContent value="backers" className="mt-8">
                 <ol className="grid gap-6 md:grid-cols-3">
                   {[
-                    { title: "Explore", desc: "Find ideas by category, search, or staff picks.", icon: "🔍" },
-                    { title: "Pledge", desc: "Choose a reward tier and back securely.", icon: "💳" },
+                    { title: "Explore", desc: "Find ideas by title, search, or Sort by dates.", icon: "🔍" },
+                    { title: "Pledge", desc: "Choose a campaign to support tier and back them.", icon: "💳" },
                     { title: "Track", desc: "Get updates and follow progress to completion.", icon: "📊" }
                   ].map((step, i) => (
                     <li key={i} className="group rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-6 hover:border-purple-500/50 transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10">
@@ -179,9 +174,9 @@ export default function Home() {
               <TabsContent value="creators" className="mt-8">
                 <ol className="grid gap-6 md:grid-cols-3">
                   {[
-                    { title: "Create", desc: "Tell your story with goals, rewards, and a timeline.", icon: "✨" },
-                    { title: "Launch", desc: "Share your page and rally your community.", icon: "🚀" },
-                    { title: "Deliver", desc: "Update backers and fulfill rewards on time.", icon: "🎁" }
+                    { title: "Create", desc: "Post your campaign with Goal, description, and a timeline.", icon: "✨" },
+                    { title: "Monitor", desc: "Track Your Campaign's progress.", icon: "🚀" },
+                    { title: "Deliver", desc: "Update donors and acknowledge their payments.", icon: "🎁" }
                   ].map((step, i) => (
                     <li key={i} className="group rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-6 hover:border-blue-500/50 transition-all hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10">
                       <div className="text-4xl mb-3">{step.icon}</div>
@@ -313,58 +308,6 @@ export default function Home() {
         </section>
 
         {/* Success Stories */}
-        <section className="border-t border-gray-800/50 bg-gradient-to-b from-transparent via-blue-900/5 to-transparent py-20">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">
-              Success Stories from Our Creators
-            </h2>
-            <p className="text-center text-gray-400 mb-12 text-lg">Real people, real dreams, real success</p>
-
-            <div className="grid gap-8 md:grid-cols-3">
-              {[
-                {
-                  quote: "Thanks to this platform, I was able to bring my sustainable fashion line to life. The community support was overwhelming and made my dream possible.",
-                  name: "Amira Khan",
-                  role: "Fashion Entrepreneur",
-                  img: "/creator1.jpg",
-                  color: "purple"
-                },
-                {
-                  quote: "I never thought my idea for a clean water filter would reach so many people. The backers' belief in my vision changed everything for me.",
-                  name: "David Chen",
-                  role: "Social Innovator",
-                  img: "/creator2.jpg",
-                  color: "blue"
-                },
-                {
-                  quote: "This platform gave my indie game the spotlight it needed. The support allowed me to hire a small team and complete development.",
-                  name: "Lena Torres",
-                  role: "Game Developer",
-                  img: "/creator3.jpg",
-                  color: "emerald"
-                }
-              ].map((story, i) => (
-                <div key={i} className={`group rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-8 backdrop-blur-sm hover:border-${story.color}-500/50 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-${story.color}-500/10`}>
-                  <div className="text-4xl mb-4 opacity-50">"</div>
-                  <p className="text-gray-300 mb-6 leading-relaxed italic">
-                    {story.quote}
-                  </p>
-                  <div className="flex items-center gap-4 pt-4 border-t border-gray-800/50">
-                    <img
-                      src={story.img}
-                      alt={story.name}
-                      className="h-14 w-14 rounded-full object-cover ring-2 ring-gray-700 group-hover:ring-purple-500/50 transition-all"
-                    />
-                    <div>
-                      <p className="font-semibold text-white">{story.name}</p>
-                      <p className="text-sm text-gray-400">{story.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Final CTA */}
         <section id="start" className="relative overflow-hidden">
@@ -373,7 +316,7 @@ export default function Home() {
             <div className="inline-block mb-4 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20">
               <p className="text-sm uppercase tracking-widest text-purple-400 font-semibold">Get Started Today</p>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 pb-6">
               Ready to launch your campaign?
             </h2>
             <p className="mt-3 text-lg text-gray-400 max-w-2xl mx-auto">
