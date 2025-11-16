@@ -116,8 +116,7 @@ export default function Register() {
     const [errors, setErrors] = useState({})
     const [touched, setTouched] = useState({})
 
-    const CLOUDINARY_UPLOAD_PRESET = "CrowdFund-Preset"
-    const CLOUDINARY_CLOUD_NAME = "sajjadahmed"
+
 
     function validate() {
         const next = {}
@@ -132,6 +131,8 @@ export default function Register() {
 
     async function uploadToCloudinary(file) {
         const formData = new FormData()
+        const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+        const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
         formData.append("file", file)
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
 

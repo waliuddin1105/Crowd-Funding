@@ -1,3 +1,4 @@
+import Navbar from "@/components/Navbar"
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from "lucide-react"
 
 export default function ContactUs() {
@@ -35,6 +36,8 @@ export default function ContactUs() {
   ]
 
   return (
+  <>
+  <Navbar />
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
@@ -197,5 +200,6 @@ export default function ContactUs() {
         </button>
       </div>
     </div>
+  </>
   )
 }

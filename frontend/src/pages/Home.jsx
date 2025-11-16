@@ -120,7 +120,7 @@ export default function Home() {
                   asChild 
                   className="border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-sm px-8 py-6 text-lg rounded-xl transition-all hover:scale-105"
                 >
-                  <Link to={'/create-campaign'} className="text-white">Start a campaign</Link>
+                  <Link to={'/create-campaign'} className="text-white hover:text-white">Start a campaign</Link>
                 </Button>
               </div>
             </div>
@@ -218,7 +218,7 @@ export default function Home() {
                 <Button 
                   variant="secondary" 
                   onClick={() => setPledge(50)}
-                  className="bg-gray-800 hover:bg-gray-700 px-6 py-6"
+                  className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-6"
                 >
                   Reset
                 </Button>
@@ -391,7 +391,7 @@ export default function Home() {
                 asChild 
                 className="border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-sm px-10 py-7 text-lg rounded-xl transition-all hover:scale-105"
               >
-                <Link to={'/create-campaign'} className="text-white">Start a campaign</Link>
+                <Link to={'/create-campaign'} className="text-white hover:text-white">Start a campaign</Link>
               </Button>
             </div>
           </div>

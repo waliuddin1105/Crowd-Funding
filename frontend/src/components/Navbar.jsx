@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -44,7 +44,7 @@ function getInitials(name) {
 
 export default function Navbar() {
   const [user, setUser] = useState(null)
-
+  const location = useLocation()
   useEffect(() => {
     const storedUser = getUser()
     if (storedUser) {
@@ -154,7 +154,7 @@ export default function Navbar() {
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
               <Heart className="h-4 w-4 text-white fill-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
+            <span className="text-lg font-bold tracking-tight transition-colors">
               CrowdFund
             </span>
           </Link>
@@ -164,24 +164,32 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-14">
           <Link
             to="/"
-            className="text-sm font-medium text-gray-200 hover:text-cyan-400 transition-colors relative group"
+            className={`text-sm font-medium transition-colors relative group 
+      ${location.pathname === "/" ? "text-cyan-400" : "text-gray-200 hover:text-cyan-400"}`}
           >
             Home
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+            <span className={`absolute -bottom-1 left-0 h-0.5 bg-cyan-400 transition-all duration-300
+      ${location.pathname === "/" ? "w-full" : "w-0 group-hover:w-full"}`}></span>
           </Link>
+
           <Link
             to="/all-campaigns"
-            className="text-sm font-medium text-gray-200 hover:text-cyan-400 transition-colors relative group"
+            className={`text-sm font-medium transition-colors relative group 
+      ${location.pathname === "/all-campaigns" ? "text-cyan-400" : "text-gray-200 hover:text-cyan-400"}`}
           >
             All Campaigns
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+            <span className={`absolute -bottom-1 left-0 h-0.5 bg-cyan-400 transition-all duration-300
+      ${location.pathname === "/all-campaigns" ? "w-full" : "w-0 group-hover:w-full"}`}></span>
           </Link>
+
           <Link
             to="/contact-us"
-            className="text-sm font-medium text-gray-200 hover:text-cyan-400 transition-colors relative group"
+            className={`text-sm font-medium transition-colors relative group 
+      ${location.pathname === "/contact-us" ? "text-cyan-400" : "text-gray-200 hover:text-cyan-400"}`}
           >
             Contact
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+            <span className={`absolute -bottom-1 left-0 h-0.5 bg-cyan-400 transition-all duration-300
+      ${location.pathname === "/contact-us" ? "w-full" : "w-0 group-hover:w-full"}`}></span>
           </Link>
         </nav>
 

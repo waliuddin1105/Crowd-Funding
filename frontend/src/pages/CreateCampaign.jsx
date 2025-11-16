@@ -110,7 +110,8 @@ export default function CreateCampaign() {
         }
     };
 
-
+    const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
     return (
         <>
             <Navbar />
@@ -303,12 +304,12 @@ export default function CreateCampaign() {
                                                                 if (file) {
                                                                     const formData = new FormData();
                                                                     formData.append("file", file);
-                                                                    formData.append("upload_preset", "CrowdFund-Preset");
-                                                                    formData.append("cloud_name", "sajjadahmed");
+                                                                    formData.append("upload_preset", `${CLOUDINARY_UPLOAD_PRESET}`);
+                                                                    formData.append("cloud_name", `${CLOUDINARY_CLOUD_NAME}`);
 
                                                                     try {
                                                                         const res = await fetch(
-                                                                            "https://api.cloudinary.com/v1_1/sajjadahmed/image/upload",
+                                                                            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                                                                             {
                                                                                 method: "POST",
                                                                                 body: formData,

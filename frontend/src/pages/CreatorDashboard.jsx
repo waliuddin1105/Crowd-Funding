@@ -37,6 +37,7 @@ import Navbar from "@/components/Navbar"
 import CreatorKeyStats from "@/components/Dashboards/Creator/CreatorKeyStats"
 import CreatorCampaigns from "@/components/Dashboards/Creator/CreatorCampaigns"
 import RecentCampaignDonations from "@/components/Dashboards/Creator/RecentCampaignDonations"
+import ProfileSettings from "@/components/Dashboards/Creator/ProfileSettings"
 
 // Mock data
 const mockCreatorCampaigns = [
@@ -269,16 +270,6 @@ export default function CreatorDashboard() {
     setWithdrawalAmount("")
   }
 
-  const handleDeleteCampaign = (campaignId) => {
-    if (window.confirm("Are you sure you want to delete this campaign?")) {
-      setCampaigns(campaigns.filter((c) => c.id !== campaignId))
-      toast({
-        title: "Campaign Deleted",
-        description: "The campaign has been removed",
-      })
-    }
-  }
-
   return (
     <>
     <Navbar />
@@ -294,11 +285,12 @@ export default function CreatorDashboard() {
         <CreatorKeyStats />
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="campaigns" className="space-y-12">
+          <TabsList className="grid w-full grid-cols-3">
+
+
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="donations">Donations</TabsTrigger>
-            <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -321,89 +313,13 @@ export default function CreatorDashboard() {
             <RecentCampaignDonations />
             
           </TabsContent>
-
-          {/* Financials Tab */}
           
-
-          {/* Engagement Tab */}
-          <TabsContent value="engagement" className="space-y-4">
-            <h2 className="text-2xl font-semibold text-foreground">Donor Engagement</h2>
-
-            {/* Post Update */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Post Campaign Update</CardTitle>
-                <CardDescription>
-                  Share progress and thank your donors (sent to all supporters)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="update-message">Update Message</Label>
-                  <Textarea
-                    id="update-message"
-                    placeholder="Share your progress, thank donors, or provide updates..."
-                    value={updateMessage}
-                    onChange={(e) => setUpdateMessage(e.target.value)}
-                    rows={6}
-                  />
-                </div>
-                <Button onClick={handlePostUpdate}>
-                  <Send className="h-4 w-4 mr-2" />
-                  Send Update
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Thank You Message */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Send Thank You Message</CardTitle>
-                <CardDescription>Send personalized messages to specific donors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Compose Message
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
             <h2 className="text-2xl font-semibold text-foreground">Account Settings</h2>
 
             {/* Profile Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Profile Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" placeholder="Enter first name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" placeholder="Enter last name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="Enter email" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" type="tel" placeholder="Enter phone number" />
-                  </div>
-                </div>
-                <Button>Save Changes</Button>
-              </CardContent>
-            </Card>
+            <ProfileSettings />
 
             
             

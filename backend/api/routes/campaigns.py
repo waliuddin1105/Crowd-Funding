@@ -25,7 +25,8 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func, text
 from datetime import datetime
 from ..helpers import campaign_helper
-
+from flask import g
+from api.helpers.security_helper import jwt_required
 
 @campaigns_ns.route('/') # AllCampaigns.jsx
 class AllCampaigns(Resource):
@@ -386,3 +387,66 @@ class GetUpdates(Resource):
             return {"success": False, "error": str(ve)}, 404
         except Exception as e:
             return {"success": False, "error": str(e)}, 500
+
+@campaigns_ns.route('/post-update')
+class PostUpdates(Resource):
+    @jwt_required
+    def post(self):
+        try:
+            data = request.get_json()
+            campaign_id = data.get("campaign_id")
+            content = data.get("content", "").strip()
+
+            if not campaign_id or not content:
+                return {"success": False, "message": "Campaign ID and content are required."}, 400
+
+            creator = Users.query.get(g.user_id)
+            if not creator:
+                return {"success": False, "message": "User not found."}, 400
+
+            if creator.role.value.lower() != "creator":
+                return {"success": False, "message": "Only creators can post updates."}, 403
+
+            campaign = Campaigns.query.get(campaign_id)
+            if not campaign or campaign.creator_id != creator.user_id:
+                return {"success": False, "message": "Campaign not found or access denied."}, 404
+
+            new_update = CampaignUpdates(
+                campaign_id=campaign_id,
+                content=content
+            )
+            db.session.add(new_update)
+            db.session.commit()
+
+            return {"success": True, "message": "Update posted successfully.", "update": new_update.to_dict()}, 201
+
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "message": f"Unexpected error: {str(e)}"}, 500
+
+@campaigns_ns.route('/delete-campaign/<int:campaign_id>')
+class DeleteCampaign(Resource):
+    @jwt_required
+    def delete(self, campaign_id):
+        try:
+            user = Users.query.get(g.user_id)
+            if not user:
+                return {"success": False, "message": "User not found."}, 400
+
+            if user.role.value.lower() != "creator":
+                return {"success": False, "message": "Only creators can delete campaigns."}, 403
+
+            # Get the campaign
+            campaign = Campaigns.query.get(campaign_id)
+            if not campaign or campaign.creator_id != user.user_id:
+                return {"success": False, "message": "Campaign not found or access denied."}, 404
+
+            # Delete the campaign
+            db.session.delete(campaign)
+            db.session.commit()
+
+            return {"success": True, "message": "Campaign deleted successfully."}, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "message": f"Unexpected error: {str(e)}"}, 500
