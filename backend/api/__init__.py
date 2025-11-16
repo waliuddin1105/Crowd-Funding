@@ -59,6 +59,7 @@ donations_ns = Namespace('Donations', description='Data about the donations')
 follows_ns = Namespace('Follows', description = 'Data about user follows')
 campaign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
 admin_reviews_ns = Namespace('Admin Reviews', description = 'Data about admin reviews')
+creator_ns = Namespace('Creator', description= "Creator dashboard")
 # chat_ns = Namespace('Chat', description='Data about RAG chat') # for RAG folder
 
 api.add_namespace(users_ns, '/users')
@@ -71,6 +72,7 @@ api.add_namespace(donations_ns, '/donations')
 api.add_namespace(follows_ns, '/follows')
 api.add_namespace(campaign_updates_ns, '/campaign-updates')
 api.add_namespace(admin_reviews_ns,'/admin-reviews')
+api.add_namespace(creator_ns,'/creator')
 # api.add_namespace(chat_ns, '/chat') #penda ne rag mei dali hoyi, ab isko chherio nh saad
 
 # Force SQLAlchemy to configure all mappers
@@ -87,6 +89,7 @@ import api.routes.usersRoutes
 import api.routes.campaigns  
 import api.routes.comments
 import api.routes.donationsRoutes
+import api.routes.creatorDashboardRoutes
 # import api.routes.payments
 # import api.routes.updates
 import api.routes.follows

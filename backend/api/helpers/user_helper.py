@@ -52,10 +52,22 @@ def search_users(keyword):
     """Search for users by username or email substring and return matches.
     Returns a list of user dicts.
     """
-    users = Users.query.filter(
-        (Users.username.ilike(f"%{keyword}%")) | (Users.email.ilike(f"%{keyword}%"))
-    ).all()
-    return [u.to_dict() for u in users]
+    try:    
+            matched_users = Users.query.filter(Users.username.ilike(f"%{keyword}%")).all()
+
+            if not matched_users:
+                return {"Error" : "No matching results for your search"}, 404
+            
+            display_users = [
+                user.to_dict() for user in matched_users
+            ]
+
+            return {
+                "Success" : "Search succesful!",
+                "users" : display_users
+            }, 200
+    except Exception as e:
+        return {"Error" : f"Unexpected Error {str(e)}"}, 500
 
 
 def update_user(user_id, **kwargs):

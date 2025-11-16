@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from flask_sqlalchemy import SQLAlchemy
 from api import bcrypt
-from api import db
+from api import db, app
 
 user_comment_likes = db.Table(
     "user_comment_likes",
@@ -389,3 +389,6 @@ class ChatHistory(db.Model):
             "message": self.message,
             "timestamp": self.timestamp,
         }
+    
+with app.app_context():
+    db.create_all()

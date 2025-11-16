@@ -8,7 +8,8 @@ def create_donation(user_id, campaign_id, amount, status="pending"):
     """Create a donation for a campaign after validating amount and campaign status.
     Returns the created donation as a dict.
     """
-    from api.models.cf_models import DonationStatus
+    from api.models.cf_models import Campaigns, CampaignStatus, Donations, DonationStatus, Users
+    from api import db
     if not amount or amount <= 0:
         raise ValueError("Amount must be greater than 0")
 
@@ -18,9 +19,6 @@ def create_donation(user_id, campaign_id, amount, status="pending"):
         )
     except ValueError:
         raise ValueError(f"Invalid donation status: {status}")
-
-    from api.models.cf_models import Campaigns, CampaignStatus, Donations, DonationStatus
-    from api import db
 
     campaign = Campaigns.query.get(campaign_id)
     if not campaign:
@@ -54,6 +52,13 @@ def create_donation(user_id, campaign_id, amount, status="pending"):
         available = campaign.goal_amount - total_committed
         raise ValueError(
             f"Donation amount exceeds the campaign's remaining goal. Maximum allowed: {available}"
+        )
+    
+    user_donating = Users.query.get(user_id)
+    
+    if user_donating.role.value != 'donor':
+        raise ValueError(
+            "Only a user with the role donor can donate"
         )
 
     donation = Donations(
