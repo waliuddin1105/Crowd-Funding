@@ -1,14 +1,5 @@
-# Try to import Resource from flask_restx (preferred) or fallback to flask_restful if not available.
-try:
-    from flask_restx import Resource
-except Exception:
-    try:
-        from flask_restful import Resource  # fallback for environments without flask-restx
-    except Exception:
-        raise ImportError(
-            "Neither 'flask_restx' nor 'flask_restful' is available; "
-            "install one of them (pip install flask-restx) to use API resources."
-        )
+
+from flask_restx import Resource
 from api.models.cf_models import (
     Users,
     CampaignCategory,
@@ -16,6 +7,7 @@ from api.models.cf_models import (
     Comments,
     CampaignStatus,
     Payments,
+    Donations,
     CampaignUpdates
 )
 from flask import jsonify, request
@@ -330,7 +322,7 @@ class FullyFundedCampaigns(Resource): #Home.jsx
             print("Error fetching campaigns:", e)
             return {"success": False, "error": str(e)}, 500
         
-@campaigns_ns.route('/stats') #for HOme page
+@campaigns_ns.route('/stats') #for Home page
 class CampaignStats(Resource):
     def get(self):
         try:
@@ -450,3 +442,96 @@ class DeleteCampaign(Resource):
         except Exception as e:
             db.session.rollback()
             return {"success": False, "message": f"Unexpected error: {str(e)}"}, 500
+
+
+#Admin Dashboard routes
+@campaigns_ns.route('/status/<string:status>')
+class CampaignsByStatus(Resource):
+    def get(self, status):
+        """Get campaigns by status(pending/active/completed/rejected)"""
+        try:
+            try:
+                status_enum = CampaignStatus[status.lower()]
+            except KeyError:
+                return {"status": "error", "message": "Invalid status value"}, 400
+
+            campaigns = (
+                db.session.query(Campaigns)
+                .filter(Campaigns.status == status_enum)
+                .all()
+            )
+
+            result = [c.to_dict() for c in campaigns]
+
+            return {"status": "success", "data": result}, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"status": "error", "message": str(e)}, 500
+
+
+@campaigns_ns.route('/admin-key-stats')
+class AdminStats(Resource):
+    def get(self):
+        """Admin dashboard statistics"""
+        try:
+            total_campaigns = Campaigns.query.count()
+
+            active_campaigns = Campaigns.query.filter_by(
+                status=CampaignStatus.active
+            ).count()
+
+            total_raised = db.session.query(
+                db.func.coalesce(db.func.sum(Donations.amount), 0)
+            ).scalar()
+            total_raised = float(total_raised)
+
+            total_users = Users.query.count()
+            total_creators = Users.query.filter_by(role="creator").count()
+            total_donors = Users.query.filter_by(role="donor").count()
+
+            pending_campaigns = Campaigns.query.filter_by(
+                status=CampaignStatus.pending
+            ).count()
+
+            top_campaign = (
+                db.session.query(
+                    Campaigns.title,
+                    db.func.coalesce(db.func.sum(Donations.amount), 0).label("raised")
+                )
+                .join(Donations, Campaigns.campaign_id == Donations.campaign_id, isouter=True)
+                .group_by(Campaigns.title)
+                .order_by(db.desc("raised"))
+                .first()
+            )
+
+            if top_campaign:
+                top_campaign_title = top_campaign.title
+                top_campaign_raised = float(top_campaign.raised)
+            else:
+                top_campaign_title = None
+                top_campaign_raised = 0
+
+            return {
+                "status": "success",
+                "data": {
+                    "total_campaigns": {
+                        "count": total_campaigns,
+                        "active": active_campaigns
+                    },
+                    "total_raised": total_raised,
+                    "total_users": {
+                        "count": total_users,
+                        "creators": total_creators,
+                        "donors": total_donors
+                    },
+                    "pending_campaigns": pending_campaigns,
+                    "top_campaign": {
+                        "title": top_campaign_title,
+                        "raised": top_campaign_raised
+                    }
+                }
+            }, 200
+
+        except Exception as e:
+            return {"status": "error", "message": str(e)}, 500

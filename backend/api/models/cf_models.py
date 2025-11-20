@@ -356,7 +356,7 @@ class AdminReviews(db.Model):
             "review_id": self.review_id,
             "decision": self.decision,
             "comments": self.comments,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat(),
             "admin": (
                 {"user_id": self.admin.user_id, "username": self.admin.username}
                 if self.admin

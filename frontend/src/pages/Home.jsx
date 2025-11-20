@@ -164,7 +164,6 @@ export default function Home() {
                     { title: "Track", desc: "Get updates and follow progress to completion.", icon: "📊" }
                   ].map((step, i) => (
                     <li key={i} className="group rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-6 hover:border-purple-500/50 transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10">
-                      <div className="text-4xl mb-3">{step.icon}</div>
                       <h3 className="font-semibold text-xl mb-2">{i + 1}. {step.title}</h3>
                       <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
                     </li>
@@ -179,7 +178,6 @@ export default function Home() {
                     { title: "Deliver", desc: "Update donors and acknowledge their payments.", icon: "🎁" }
                   ].map((step, i) => (
                     <li key={i} className="group rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-6 hover:border-blue-500/50 transition-all hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10">
-                      <div className="text-4xl mb-3">{step.icon}</div>
                       <h3 className="font-semibold text-xl mb-2">{i + 1}. {step.title}</h3>
                       <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
                     </li>
@@ -195,7 +193,6 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 py-16 grid gap-8 md:grid-cols-2">
             <div className="rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-8 backdrop-blur-sm hover:border-purple-500/30 transition-all">
               <div className="flex items-center gap-3 mb-2">
-                <div className="text-3xl">💰</div>
                 <h3 className="font-semibold text-2xl">Estimate your impact</h3>
               </div>
               <p className="text-sm text-gray-400 mt-2 leading-relaxed">
@@ -234,7 +231,7 @@ export default function Home() {
             {/* Trust & Safety */}
             <div className="rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 p-8 backdrop-blur-sm hover:border-blue-500/30 transition-all">
               <div className="flex items-center gap-3 mb-2">
-                <div className="text-3xl">🛡️</div>
+                <div className="text-3xl"></div>
                 <h3 className="font-semibold text-2xl">Trust & Safety</h3>
               </div>
               <ul className="mt-6 grid gap-4">

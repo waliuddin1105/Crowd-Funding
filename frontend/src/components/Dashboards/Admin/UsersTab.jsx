@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import {
   Eye,
@@ -76,123 +76,113 @@ const UsersTab = () => {
   };
 
 
-    
+
   return (
     <>
       {/* Creators */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaign Creators</CardTitle>
-                <CardDescription>Registered creators and their statistics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Creator</TableHead>
-                      <TableHead>Campaigns</TableHead>
-                      <TableHead>Total Raised</TableHead>
-                      <TableHead>Join Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockCreators.map((creator) => (
-                      <TableRow key={creator.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}`} />
-                              <AvatarFallback>{creator.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{creator.name}</div>
-                              <div className="text-sm text-muted-foreground">{creator.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{creator.campaigns}</TableCell>
-                        <TableCell>{formatCurrency(creator.totalRaised)}</TableCell>
-                        <TableCell>{formatDate(creator.joinDate)}</TableCell>
-                        <TableCell>
-                          <Badge variant={creator.status === 'active' ? 'default' : 'destructive'}>
-                            {creator.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="ghost">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            
-                            <Button size="sm" variant="ghost">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Campaign Creators</CardTitle>
+          <CardDescription>Registered creators and their statistics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Creator</TableHead>
+                <TableHead>Campaigns</TableHead>
+                <TableHead>Total Raised</TableHead>
+                <TableHead>Join Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockCreators.map((creator) => (
+                <TableRow key={creator.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}`} />
+                        <AvatarFallback>{creator.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{creator.name}</div>
+                        <div className="text-sm text-muted-foreground">{creator.email}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{creator.campaigns}</TableCell>
+                  <TableCell>{formatCurrency(creator.totalRaised)}</TableCell>
+                  <TableCell>{formatDate(creator.joinDate)}</TableCell>
+                  
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost">
+                        <Eye className="h-4 w-4" />
+                      </Button>
 
-            {/* Donors */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Donors</CardTitle>
-                <CardDescription>Registered donors and their contributions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Donor</TableHead>
-                      <TableHead>Total Donations</TableHead>
-                      <TableHead>Campaigns Supported</TableHead>
-                      <TableHead>Join Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockDonors.map((donor) => (
-                      <TableRow key={donor.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${donor.name}`} />
-                              <AvatarFallback>{donor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{donor.name}</div>
-                              <div className="text-sm text-muted-foreground">{donor.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatCurrency(donor.totalDonations)}</TableCell>
-                        <TableCell>{donor.campaignsSupported}</TableCell>
-                        <TableCell>{formatDate(donor.joinDate)}</TableCell>
-                        <TableCell>
-                          <Badge variant={donor.status === 'active' ? 'default' : 'destructive'}>
-                            {donor.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="ghost">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                      <Button size="sm" variant="ghost">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Donors */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Donors</CardTitle>
+          <CardDescription>Registered donors and their contributions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Donor</TableHead>
+                <TableHead>Total Donations</TableHead>
+                <TableHead>Campaigns Supported</TableHead>
+                <TableHead>Join Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockDonors.map((donor) => (
+                <TableRow key={donor.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${donor.name}`} />
+                        <AvatarFallback>{donor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{donor.name}</div>
+                        <div className="text-sm text-muted-foreground">{donor.email}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{formatCurrency(donor.totalDonations)}</TableCell>
+                  <TableCell>{donor.campaignsSupported}</TableCell>
+                  <TableCell>{formatDate(donor.joinDate)}</TableCell>
+                  
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </>
   )
 }
