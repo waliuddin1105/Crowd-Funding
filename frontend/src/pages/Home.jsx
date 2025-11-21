@@ -24,11 +24,11 @@ function formatCurrency(n) {
 }
 
 export default function Home() {
-  const [campaigns,setCampaigns] = useState([])
+  const [campaigns, setCampaigns] = useState([])
   const [pledge, setPledge] = useState(50)
-  const [stats,setStats] = useState([])
+  const [stats, setStats] = useState([])
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -42,28 +42,28 @@ export default function Home() {
 
     fetchStats();
   }, []);
-  
-  useEffect(() => {
-  const fetchFullyFundedCampaigns = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/campaigns/fully-funded`)
-      const data = await response.json()
-      
-      if (data.success) {
-        setCampaigns(data.campaigns)
-        
-        console.log(`Loaded ${data.count} fully-funded campaigns`)
-      } else {
-        console.error('Failed to fetch campaigns:', data.error)
-      }
-    } catch (error) {
-      console.error('Error fetching fully-funded campaigns:', error)
-    }
-  }
 
-  fetchFullyFundedCampaigns()
-}, [])
-  
+  useEffect(() => {
+    const fetchFullyFundedCampaigns = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/campaigns/fully-funded`)
+        const data = await response.json()
+
+        if (data.success) {
+          setCampaigns(data.campaigns)
+
+          console.log(`Loaded ${data.count} fully-funded campaigns`)
+        } else {
+          console.error('Failed to fetch campaigns:', data.error)
+        }
+      } catch (error) {
+        console.error('Error fetching fully-funded campaigns:', error)
+      }
+    }
+
+    fetchFullyFundedCampaigns()
+  }, [])
+
   const exampleGoal = 10000
   const pledgeImpactPct = Math.min(100, Math.max(0, Math.round((Number(pledge || 0) / exampleGoal) * 100)))
 
@@ -73,7 +73,7 @@ export default function Home() {
       <main className="font-sans bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 min-h-screen">
         <section className="relative border-b border-gray-800/50 min-h-[65vh] md:min-h-[75vh] flex items-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-emerald-900/20 animate-gradient"></div>
-          
+
           {/* Background image */}
           <div className="absolute inset-0">
             <img
@@ -100,19 +100,19 @@ export default function Home() {
                 Fund ideas worth building.
               </h1>
               <p className="mt-6 text-xl text-gray-300 leading-relaxed animate-fade-in-delayed">
-                Discover projects across technology, art, and social good.
-                Back the work you believe in—or launch your own.
+                Join thousands of creators and supporters shaping the future—start your journey today!
+                Be part of campaigns that make a real impact!
               </p>
               <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 animate-fade-in-more-delayed">
-                <Button 
-                  asChild 
+                <Button
+                  asChild
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
                 >
                   <Link to={"/all-campaigns"}>Explore campaigns</Link>
                 </Button>
-                <Button 
-                  variant="outline" 
-                  asChild 
+                <Button
+                  variant="outline"
+                  asChild
                   className="border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-sm px-8 py-6 text-lg rounded-xl transition-all hover:scale-105"
                 >
                   <Link to={'/create-campaign'} className="text-white hover:text-white">Start a campaign</Link>
@@ -207,8 +207,8 @@ export default function Home() {
                   aria-label="Pledge amount"
                   className="bg-gray-950/50 border-gray-700 focus:border-purple-500 text-lg py-6"
                 />
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   onClick={() => setPledge(50)}
                   className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-6"
                 >
@@ -216,8 +216,8 @@ export default function Home() {
                 </Button>
               </div>
               <div className="mt-6">
-                <Progress value={pledgeImpactPct} className="h-3 bg-gray-800 [&>div]:bg-gradient-to-r [&>div]:from-emerald-400 [&>div]:to-green-500"/>
-                
+                <Progress value={pledgeImpactPct} className="h-3 bg-gray-800 [&>div]:bg-gradient-to-r [&>div]:from-emerald-400 [&>div]:to-green-500" />
+
                 <div className="mt-4 p-4 rounded-xl bg-gray-950/50 border border-gray-800">
                   <div className="text-sm text-gray-400">
                     Your pledge of <span className="font-bold text-emerald-400 text-lg">{formatCurrency(pledge)}</span> covers
@@ -320,15 +320,15 @@ export default function Home() {
               Join thousands of creators bringing new ideas to life. Your journey starts here.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
-              <Button 
-                asChild 
+              <Button
+                asChild
                 className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-7 text-lg rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/40 hover:scale-105"
               >
                 <Link to={"/all-campaigns"}>Find inspiration</Link>
               </Button>
-              <Button 
-                variant="outline" 
-                asChild 
+              <Button
+                variant="outline"
+                asChild
                 className="border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-sm px-10 py-7 text-lg rounded-xl transition-all hover:scale-105"
               >
                 <Link to={'/create-campaign'} className="text-white hover:text-white">Start a campaign</Link>

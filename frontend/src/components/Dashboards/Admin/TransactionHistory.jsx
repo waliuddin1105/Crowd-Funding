@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -9,30 +9,31 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-const mockTransactions = [
-  {
-    id: "t1",
-    type: "donation",
-    donor: "Emily Johnson",
-    campaign: "Community Food Bank",
-    amount: 500,
-    date: "2025-01-15 14:30",
-    status: "completed",
-  },
-  {
-    id: "t2",
-    type: "donation",
-    donor: "Robert Taylor",
-    campaign: "Disaster Relief Fund",
-    amount: 1000,
-    date: "2025-01-15 12:15",
-    status: "completed",
-  },
-];
-
-
+import { useToast } from '@/hooks/use-toast.js';
 
 const TransactionHistory = () => {
+  const { toast } = useToast();
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+        const response = await fetch(`${backendUrl}/payments/transaction-history`);
+        const data = await response.json();
+
+        if (data.status === "success") {
+          setTransactions(data.data);
+        } else {
+          toast({ title: "Error", description: data.message, variant: "destructive" });
+        }
+      } catch (err) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -42,55 +43,50 @@ const TransactionHistory = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  
   return (
     <>
       <Card>
-                    <CardHeader>
-                      <CardTitle>Transaction History</CardTitle>
-                      <CardDescription>All platform transactions</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Type</TableHead>
-                            <TableHead>User</TableHead>
-                            <TableHead>Campaign</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Date & Time</TableHead>
-                            <TableHead>Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {mockTransactions.map((transaction) => (
-                            <TableRow key={transaction.id}>
-                              <TableCell>
-                                <Badge variant="outline">{transaction.type}</Badge>
-                              </TableCell>
-                              <TableCell>{transaction.donor}</TableCell>
-                              <TableCell>{transaction.campaign}</TableCell>
-                              <TableCell>{formatCurrency(transaction.amount)}</TableCell>
-                              <TableCell>{transaction.date}</TableCell>
-                              <TableCell>
-                                <Badge variant="default">{transaction.status}</Badge>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
+        <CardHeader>
+          <CardTitle>Transaction History</CardTitle>
+          <CardDescription>All platform transactions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Campaign</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Date & Time</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((transaction, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Badge variant="outline">{transaction.type}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {transaction.user ? transaction.user.name : "N/A"}
+                  </TableCell>
+                  <TableCell>
+                    {transaction.campaign ? transaction.campaign.title : "N/A"}
+                  </TableCell>
+                  <TableCell>{formatCurrency(transaction.amount)}</TableCell>
+                  <TableCell>{transaction.date_time}</TableCell>
+                  <TableCell>
+                    <Badge variant="default">{transaction.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </>
-  )
-}
+  );
+};
 
-export default TransactionHistory
+export default TransactionHistory;

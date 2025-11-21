@@ -104,13 +104,15 @@ export default function Navbar() {
                 </Link>
 
                 <div className="mt-6 pt-6 border-t border-white/10">
-                  <Button asChild className="w-full bg-primary hover:bg-primary/90 text-white mb-3">
+                  {user?.role == 'creator' && (
+                    <Button asChild className="w-full bg-primary hover:bg-primary/90 text-white mb-3">
                     <Link to="/create-campaign">
                       <Plus className="h-4 w-4 mr-2" />
                       Start a Campaign
                     </Link>
                   </Button>
 
+                  )}
                   {user ? (
                     <div className="space-y-2">
                       <Button variant="outline" asChild className="w-full border-white/20 hover:bg-white/10 text-white">
@@ -133,6 +135,7 @@ export default function Navbar() {
                         <p className="text-xs text-gray-400">Signed in as</p>
                         <p className="text-sm font-medium truncate">{user?.username}</p>
                         <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                        <p className="text-xs text-gray-400 truncate">{user?.role}</p>
                       </div>
                     </div>
                   ) : (
@@ -195,13 +198,15 @@ export default function Navbar() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-primary/20 transition-all">
+          {user?.role == 'creator' && (
+            <Button asChild className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-primary/20 transition-all">
             <Link to="/create-campaign">
               <Plus className="h-4 w-4 mr-2" />
               Start Campaign
             </Link>
           </Button>
 
+          )}
           {user ? (
             <>
               <Link
@@ -230,7 +235,7 @@ export default function Navbar() {
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">{user?.username || "User"}</p>
                       <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                      <p className="text-xs text-primary capitalize">{user?.role}</p>
+                      <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />

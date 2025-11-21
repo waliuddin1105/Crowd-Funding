@@ -7,8 +7,9 @@ from api.models.cf_models import (
     Comments,
     CampaignStatus,
     Payments,
+    UserRole,
     Donations,
-    CampaignUpdates
+    CampaignUpdates,AdminReviews
 )
 from flask import jsonify, request
 from api import db, campaigns_ns
@@ -128,7 +129,6 @@ class CreateCampaign(Resource):
                 status=status_enum
             )
 
-            print('Campaign to add:', campaign)
 
             db.session.add(campaign)
             db.session.commit()
@@ -448,7 +448,7 @@ class DeleteCampaign(Resource):
 @campaigns_ns.route('/status/<string:status>')
 class CampaignsByStatus(Resource):
     def get(self, status):
-        """Get campaigns by status(pending/active/completed/rejected)"""
+        """Get campaigns by status (pending/active/completed/rejected)"""
         try:
             try:
                 status_enum = CampaignStatus[status.lower()]
@@ -461,7 +461,25 @@ class CampaignsByStatus(Resource):
                 .all()
             )
 
-            result = [c.to_dict() for c in campaigns]
+            result = []
+
+            for c in campaigns:
+                campaign_dict = c.to_dict()
+
+                if status_enum == CampaignStatus.rejected:
+                    review = (
+                        db.session.query(AdminReviews)
+                        .filter_by(campaign_id=c.campaign_id)
+                        .order_by(AdminReviews.created_at.desc())
+                        .first()
+                    )
+
+                    campaign_dict["rejection_reason"] = review.comments if review else None
+                    campaign_dict["rejected_at"] = (
+                        review.created_at.isoformat() if review else None
+                    )
+
+                result.append(campaign_dict)
 
             return {"status": "success", "data": result}, 200
 
@@ -534,4 +552,181 @@ class AdminStats(Resource):
             }, 200
 
         except Exception as e:
+            return {"status": "error", "message": str(e)}, 500
+
+@campaigns_ns.route('/get-creators')
+class CreatorsData(Resource):
+    def get(self):
+        """Fetch all creator statistics with pagination"""
+        try:
+            page = int(request.args.get("page", 1))
+            per_page = int(request.args.get("per_page", 10))
+
+            query = db.session.query(Users).filter(Users.role == UserRole.creator)
+
+            total_items = query.count()
+            total_pages = (total_items + per_page - 1) // per_page
+
+            creators = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            result = []
+
+            for creator in creators:
+                try:
+                    campaign_count = (
+                        db.session.query(Campaigns)
+                        .filter_by(creator_id=creator.user_id)
+                        .count()
+                    )
+
+                    total_raised = (
+                        db.session.query(db.func.sum(Campaigns.raised_amount))
+                        .filter(Campaigns.creator_id == creator.user_id)
+                        .scalar()
+                    )
+                    total_raised = float(total_raised or 0)
+
+                    creator_dict = {
+                        "creator_id": creator.user_id,
+                        "name": creator.username,
+                        "email": creator.email,
+                        "profile_image": creator.profile_image,
+                        "campaigns": campaign_count,
+                        "total_raised": total_raised,
+                        "join_date": (
+                            creator.created_at.strftime("%b %d, %Y")
+                            if creator.created_at else None
+                        )
+                    }
+
+                    result.append(creator_dict)
+
+                except Exception as e:
+                    print(f"Error processing creator {creator.user_id}: {str(e)}")
+                    continue
+
+            return {
+                "status": "success",
+                "page": page,
+                "per_page": per_page,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "data": result
+            }, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {
+                "status": "error",
+                "message": str(e)
+            }, 500
+
+@campaigns_ns.route('/get-donors')
+class UsersData(Resource):
+    def get(self):
+        """Fetch all donor statistics with pagination"""
+        try:
+            page = int(request.args.get("page", 1))
+            per_page = int(request.args.get("per_page", 10))
+
+            query = db.session.query(Users).filter(Users.role == UserRole.donor)
+
+            total_items = query.count()
+            total_pages = (total_items + per_page - 1) // per_page
+
+            donors = query.offset((page - 1) * per_page).limit(per_page).all()
+
+            result = []
+
+            for donor in donors:
+                try:
+                    # Total donations made (SUM)
+                    total_donations = (
+                        db.session.query(db.func.sum(Donations.amount))
+                        .filter(Donations.user_id == donor.user_id)
+                        .scalar()
+                    )
+                    total_donations = float(total_donations or 0)
+
+                    # Unique campaigns supported
+                    campaigns_supported = (
+                        db.session.query(Donations.campaign_id)
+                        .filter(Donations.user_id == donor.user_id)
+                        .distinct()
+                        .count()
+                    )
+
+                    donor_dict = {
+                        "user_id": donor.user_id,
+                        "name": donor.username,
+                        "email": donor.email,
+                        "profile_image": donor.profile_image,
+                        "total_donations": total_donations,
+                        "campaigns_supported": campaigns_supported,
+                        "join_date": (
+                            donor.created_at.strftime("%b %d, %Y")
+                            if donor.created_at else None
+                        )
+                    }
+
+                    result.append(donor_dict)
+
+                except Exception as e:
+                    print(f"Error processing donor {donor.user_id}: {str(e)}")
+                    continue
+
+            return {
+                "status": "success",
+                "page": page,
+                "per_page": per_page,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "data": result
+            }, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"status": "error", "message": str(e)}, 500
+
+
+
+@campaigns_ns.route('/highest-funded')
+class HighestFunded(Resource):
+    def get(self):
+        """Fetch top 5 highest funded campaigns along with donor count"""
+        try:
+            top_campaigns = (
+                db.session.query(Campaigns)
+                .order_by(Campaigns.raised_amount.desc())
+                .limit(5)
+                .all()
+            )
+
+            result = []
+
+            for c in top_campaigns:
+                donor_count = (
+                    db.session.query(func.count(func.distinct(Donations.user_id)))
+                    .filter(Donations.campaign_id == c.campaign_id)
+                    .scalar()
+                )
+
+                campaign_dict = {
+                    "campaign_id": c.campaign_id,
+                    "title": c.title,
+                    "raised_amount": float(c.raised_amount or 0),
+                    "donor_count": donor_count or 0,
+                    "creator": {
+                        "user_id": c.creator.user_id,
+                        "username": c.creator.username,
+                        "profile_image": c.creator.profile_image,
+                    } if c.creator else None,
+                }
+
+                result.append(campaign_dict)
+
+            return {"status": "success", "data": result}, 200
+
+        except Exception as e:
+            db.session.rollback()
             return {"status": "error", "message": str(e)}, 500

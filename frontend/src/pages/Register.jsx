@@ -116,7 +116,7 @@ export default function Register() {
     const [errors, setErrors] = useState({})
     const [touched, setTouched] = useState({})
 
-
+    const defaultImgURL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1763711531/default_pfp_w2lnen.jpg`
 
     function validate() {
         const next = {}
@@ -135,7 +135,7 @@ export default function Register() {
         const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
         formData.append("file", file)
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-
+            
         try {
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -220,7 +220,7 @@ export default function Register() {
                 email: email.toLowerCase().trim(),
                 password: password,
                 role: role,
-                profile_image: profileImage
+                profile_image: profileImage || defaultImgURL
             }
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -236,7 +236,7 @@ export default function Register() {
 
             if (response.ok) {
                 toast({
-                    title: "Account Created Successfully! 🎉",
+                    title: "Account Created Successfully!",
                     description: `Welcome ${username}! Redirecting to login page...`,
                     variant: "default",
                 })

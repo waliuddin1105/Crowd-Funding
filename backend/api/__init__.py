@@ -18,7 +18,6 @@ authorizations = {
 
 app = Flask(__name__)
 
-# Configure CORS BEFORE creating the API
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -35,7 +34,7 @@ api = Api(
     title="Crowdfunding platform",
     description="Api for crowdfunding platform",
     authorizations=authorizations,
-    security='bearer authorizations' #this makes sure that we dont need to authorize for every route every time
+    security='bearer authorizations' 
 )
 
 config_parser = ConfigParser(interpolation=None)
@@ -90,7 +89,7 @@ import api.routes.campaigns
 import api.routes.comments
 import api.routes.donationsRoutes
 import api.routes.creatorDashboardRoutes
-# import api.routes.payments
+import api.routes.payments
 # import api.routes.updates
 import api.routes.follows
 # import api.routes.campaign_updates

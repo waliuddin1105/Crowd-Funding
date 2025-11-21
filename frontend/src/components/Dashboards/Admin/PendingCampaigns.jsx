@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,68 +17,68 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
-// Mock Data
-const mockPendingCampaigns = [
-  {
-    id: 1,
-    title: "Emergency Medical Fund for John",
-    creator: "Sarah Wilson",
-    creatorId: "c1",
-    category: "Medical",
-    goalAmount: 50000,
-    dateCreated: "2025-01-15",
-    description: "Urgent medical treatment needed...",
-  },
-  {
-    id: 2,
-    title: "Education Support for Underprivileged Kids",
-    creator: "Mike Chen",
-    creatorId: "c2",
-    category: "Education",
-    goalAmount: 25000,
-    dateCreated: "2025-01-14",
-    description: "Help provide quality education...",
-  },
-];
+import { getUser } from '@/lib/auth.js';
 
 
 
-  // Calculate stats
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount);
+// Calculate stats
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+  }).format(amount);
+};
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const getCategoryStyle = (category) => {
+  const styles = {
+    Medical: 'bg-red-500/10 text-red-500 border-red-500/20',
+    Education: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    Emergency: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+    Charity: 'bg-green-500/10 text-green-500 border-green-500/20',
+    Personal: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
   };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const getCategoryStyle = (category) => {
-    const styles = {
-      Medical: 'bg-red-500/10 text-red-500 border-red-500/20',
-      Education: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-      Emergency: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-      Charity: 'bg-green-500/10 text-green-500 border-green-500/20',
-      Personal: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-    };
-    return styles[category] || 'bg-muted text-muted-foreground';
-  };
+  return styles[category] || 'bg-muted text-muted-foreground';
+};
 
 function PendingCampaigns() {
-   const { toast } = useToast();
-     const [selectedCampaign, setSelectedCampaign] = useState(null);
-     const [showApproveDialog, setShowApproveDialog] = useState(false);
-     const [showRejectDialog, setShowRejectDialog] = useState(false);
-     const [rejectionReason, setRejectionReason] = useState('');
-     const pendingCount = mockPendingCampaigns.length;
-   const handleApproveCampaign = (campaign) => {
+  const { toast } = useToast();
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [pendingCount, setPendingCount] = useState(0)
+  const [user, setUser] = useState(null)
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const [pendingCampaigns, SetPendingCampaigns] = useState([])
+  useEffect(() => {
+    const u = getUser()
+    if (u) {
+      setUser(u)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchPendingStats = async () => {
+      const response = await fetch(`${backendUrl}/campaigns/status/pending`)
+      const data = await response.json()
+      if (data?.status === "success") {
+        SetPendingCampaigns(data.data)
+        setPendingCount(data.data.length)
+      }
+    }
+
+    fetchPendingStats()
+  }, [])
+  const handleApproveCampaign = (campaign) => {
     setSelectedCampaign(campaign);
     setShowApproveDialog(true);
   };
@@ -87,17 +87,59 @@ function PendingCampaigns() {
     setSelectedCampaign(campaign);
     setShowRejectDialog(true);
   };
+  const updateCampaignStatus = async ({ campaign_id, decision, comments }) => {
+    try {
+      const response = await fetch(`${backendUrl}/admin-reviews/handle-campaign-status`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          admin_id: user?.user_id,
+          campaign_id,
+          decision,
+          comments
+        })
+      });
 
-  const confirmApproval = () => {
-    toast({
-      title: "Campaign Approved",
-      description: `"${selectedCampaign.title}" has been approved successfully.`,
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return { status: "error", message: error.message };
+    }
+  };
+
+  const confirmApproval = async () => {
+    const data = await updateCampaignStatus({
+      campaign_id: selectedCampaign.campaign_id,
+      decision: "approved",
+      comments: "Approved by the admin"
     });
+
+    if (data.status === "success") {
+      toast({
+        title: "Campaign Approved",
+        description: `"${selectedCampaign.title}" has been approved successfully.`,
+      });
+
+      SetPendingCampaigns(prev =>
+        prev.filter(c => c.campaign_id !== selectedCampaign.campaign_id)
+      );
+      setPendingCount(prev => prev - 1);
+    } else {
+      toast({
+        title: "Error",
+        description: data.message || "Failed to approve the campaign.",
+        variant: "destructive",
+      });
+    }
+
     setShowApproveDialog(false);
     setSelectedCampaign(null);
   };
 
-  const confirmRejection = () => {
+
+  const confirmRejection = async () => {
     if (!rejectionReason.trim()) {
       toast({
         title: "Rejection Reason Required",
@@ -106,73 +148,105 @@ function PendingCampaigns() {
       });
       return;
     }
-    toast({
-      title: "Campaign Rejected",
-      description: `"${selectedCampaign.title}" has been rejected.`,
+
+    const data = await updateCampaignStatus({
+      campaign_id: selectedCampaign.campaign_id,
+      decision: "rejected",
+      comments: rejectionReason
     });
+
+    if (data.status === "success") {
+      toast({
+        title: "Campaign Rejected",
+        description: `"${selectedCampaign.title}" has been rejected.`,
+      });
+
+      SetPendingCampaigns(prev =>
+        prev.filter(c => c.campaign_id !== selectedCampaign.campaign_id)
+      );
+      setPendingCount(prev => prev - 1);
+    } else {
+      toast({
+        title: "Error",
+        description: data.message || "Failed to reject the campaign.",
+        variant: "destructive",
+      });
+    }
+
     setShowRejectDialog(false);
     setSelectedCampaign(null);
-    setRejectionReason('');
+    setRejectionReason("");
   };
+
 
   return (
     <>
       <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Pending Campaigns</CardTitle>
-                    <CardDescription>Campaigns awaiting approval</CardDescription>
-                  </div>
-                  <Badge variant="outline" className="text-orange-500 border-orange-500">
-                    {pendingCount} Pending
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockPendingCampaigns.map((campaign) => (
-                    <div key={campaign.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1 flex-1">
-                          <h3 className="font-semibold text-foreground">{campaign.title}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            by {campaign.creator} • {formatDate(campaign.dateCreated)}
-                          </p>
-                        </div>
-                        <Badge className={getCategoryStyle(campaign.category)}>
-                          {campaign.category}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>Goal: {formatCurrency(campaign.goalAmount)}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleApproveCampaign(campaign)}
-                          className="flex-1"
-                        >
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Approve
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => handleRejectCampaign(campaign)}
-                          className="flex-1"
-                        >
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Reject
-                        </Button>
-                        
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Pending Campaigns</CardTitle>
+              <CardDescription>Campaigns awaiting approval</CardDescription>
+            </div>
+            <Badge variant="outline" className="text-orange-500 border-orange-500">
+              {pendingCount} Pending
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+  {pendingCount === 0 ? (
+    <div className="text-center py-10 text-muted-foreground">
+      <p className="text-lg font-medium">No pending campaigns 🎉</p>
+      <p className="text-sm">All campaigns have been reviewed.</p>
+    </div>
+  ) : (
+    pendingCampaigns.map((campaign) => (
+      <div key={campaign.campaign_id} className="border rounded-lg p-4 space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1 flex-1">
+            <h3 className="font-semibold text-foreground">{campaign.title}</h3>
+            <p className="text-sm text-muted-foreground">
+              by {campaign.creator.username} • {formatDate(campaign.created_at)}
+            </p>
+          </div>
+          <Badge className={getCategoryStyle(campaign.category)}>
+            {campaign.category}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>Goal: {formatCurrency(campaign.goal_amount)}</span>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => handleApproveCampaign(campaign)}
+            className="flex-1"
+          >
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Approve
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => handleRejectCampaign(campaign)}
+            className="flex-1"
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            Reject
+          </Button>
+        </div>
+      </div>
+    ))
+  )}
+</div>
+
+        </CardContent>
+      </Card>
+      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reject Campaign</DialogTitle>
@@ -185,7 +259,7 @@ function PendingCampaigns() {
               <div>
                 <h4 className="font-semibold mb-2">{selectedCampaign.title}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Creator: {selectedCampaign.creator}
+                  Creator: {selectedCampaign.creator.username}
                 </p>
               </div>
               <div className="space-y-2">
@@ -223,8 +297,8 @@ function PendingCampaigns() {
             <div className="py-4">
               <h4 className="font-semibold mb-2">{selectedCampaign.title}</h4>
               <p className="text-sm text-muted-foreground">
-                Creator: {selectedCampaign.creator}<br />
-                Goal: {formatCurrency(selectedCampaign.goalAmount)}<br />
+                Creator: {selectedCampaign.creator.username}<br />
+                Goal: {formatCurrency(selectedCampaign.goal_amount)}<br />
                 Category: {selectedCampaign.category}
               </p>
             </div>
