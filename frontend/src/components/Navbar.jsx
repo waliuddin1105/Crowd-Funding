@@ -209,13 +209,7 @@ export default function Navbar() {
           )}
           {user ? (
             <>
-              <Link
-                to={dashboard.href}
-                className="hidden lg:inline-flex items-center gap-2 px-3 py-2 text-sm font-medium hover:text-cyan-400 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Link>
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-10 w-10 rounded-full p-0 hover:bg-white/10 focus:ring-2 focus:ring-primary/50">

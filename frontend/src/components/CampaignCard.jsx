@@ -9,19 +9,11 @@ export default function CampaignCard({ campaign }) {
     navigate(`/all-campaigns/${campaign.campaign_id}`)
   }
 
-  // Navigate only when donate button clicked (stop event bubbling)
-  const handleDonateClick = (e) => {
-    e.stopPropagation()
-    navigate(`/all-campaigns/${campaign.campaign_id}`)
-  }
-
-  // Progress
   const progressPercentage = Math.min(
     (campaign.raised_amount / campaign.goal_amount) * 100,
     100
   )
 
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -31,7 +23,6 @@ export default function CampaignCard({ campaign }) {
     }).format(amount)
   }
 
-  // Calculate days remaining
   const getDaysRemaining = () => {
     const today = new Date()
     const endDate = new Date(campaign.end_date)

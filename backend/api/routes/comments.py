@@ -1,5 +1,5 @@
 from flask_restx import Resource
-from flask import jsonify, request
+from flask import  request
 from api import db, comments_ns
 from api.models.cf_models import Campaigns, Users,Comments
 from sqlalchemy.orm import joinedload
@@ -41,7 +41,7 @@ class CommentDetails(Resource):
                 "campaign_id": new_comment.campaign_id,
                 "content": new_comment.content,
                 "created_at": new_comment.created_at.isoformat(),
-                "likes": new_comment.likes  # ⬅️ new field!
+                "likes": new_comment.likes 
             }
 
             return {
@@ -98,9 +98,7 @@ class ToggleLike(Resource):
             user = Users.query.get_or_404(user_id)
             comment = Comments.query.get_or_404(comment_id)
 
-            # Check if already liked
             if comment in user.liked_comments:
-                # Unlike (remove)
                 user.liked_comments.remove(comment)
                 comment.likes = max((comment.likes or 1) - 1, 0)
                 db.session.commit()
@@ -111,7 +109,6 @@ class ToggleLike(Resource):
                     "likes": comment.likes
                 }, 200
             else:
-                # Like (add)
                 user.liked_comments.append(comment)
                 comment.likes = (comment.likes or 0) + 1
                 db.session.commit()
