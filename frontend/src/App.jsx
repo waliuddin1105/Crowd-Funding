@@ -12,6 +12,8 @@ import CreatorDashboard from './pages/CreatorDashboard.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import ContactUs from './pages/ContactUs.jsx'
 import SettingsPage from './pages/SettingsPage'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentCancel from './pages/PaymentCancel'
 
 function App() {
   const router = createBrowserRouter([
@@ -25,7 +27,10 @@ function App() {
     { path: '/creator-dashboard', element: <CreatorDashboard /> },
     { path: '/admin-dashboard', element: <AdminDashboard /> },
     { path: '/contact-us', element: <ContactUs /> },
-    { path: '/settings', element:<SettingsPage /> },
+    { path: '/settings', element: <SettingsPage /> },
+    { path: '/success', element: <PaymentSuccess /> },
+    { path: '/cancel', element: <PaymentCancel /> },
+
   ])
 
   return (

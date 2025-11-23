@@ -57,12 +57,6 @@ export default function Navbar() {
     }
   }, [])
 
-  useEffect(() => {
-    if (user) {
-      console.log(`${user.username} | ${user.role} | ${user.email}`)
-    }
-  }, [user])
-
   const dashboard = useMemo(() => getDashboardLink(user?.role), [user?.role])
 
   return (
