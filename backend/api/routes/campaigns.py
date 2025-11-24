@@ -327,7 +327,7 @@ class CampaignStats(Resource):
     def get(self):
         try:
             # total raised
-            total_raised = db.session.query(func.sum(Payments.amount))\
+            total_raised = db.session.query(func.sum(Donations.amount))\
                 .filter(Payments.payment_status == 'successful').scalar() or 0
             total_raised = float(total_raised)
 

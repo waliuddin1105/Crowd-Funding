@@ -209,7 +209,6 @@ class Payments(db.Model):
     donation_id = db.Column(
         db.Integer, db.ForeignKey("donations.donation_id"), nullable=False
     )
-    amount = db.Column(db.Numeric(8, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     payment_status = db.Column(db.Enum(CampaignPaymentStatus), nullable=False)
     transaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -222,7 +221,6 @@ class Payments(db.Model):
     def to_dict(self):
         return {
             "payment_id": self.payment_id,
-            "amount": float(self.amount),
             "payment_method": self.payment_method,
             "payment_status": self.payment_status.value,
             "transaction_date": self.transaction_date,

@@ -29,7 +29,7 @@ class TransactionHistory(Resource):
                         "campaign_id": p.donation.campaign.campaign_id,
                         "title": p.donation.campaign.title
                     } if p.donation.campaign else None,
-                    "amount": float(p.amount),
+                    "amount": float(p.donation.amount),
                     "date_time": p.transaction_date.strftime("%Y-%m-%d %H:%M"),
                     "status": p.payment_status.value
                 }
