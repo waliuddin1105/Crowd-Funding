@@ -8,31 +8,31 @@ export default function ContactUs() {
     {
       id: 1,
       name: "Wali Uddin",
-      role: "Chief Administrator",
+      role: "Backend Developer",
       email: "k230719@nu.edu.pk",
       phone: "+1 (555) 123-4567",
       image: defaultImgURL,
-      bio: "Leading our platform with 10+ years of experience in crowdfunding and community management.",
+      bio: "Commits after every two lines of code, all labeled “Minor fixes.”",
       availability: "Mon - Fri, 9 AM - 6 PM EST"
     },
     {
       id: 2,
       name: "Sajjad Ahmed",
-      role: "Technical Support Lead",
+      role: "Full Stack Developer",
       email: "k230754@nu.edu.pk",
       phone: "+1 (555) 234-5678",
       image: defaultImgURL,
-      bio: "Ensuring smooth technical operations and helping users resolve platform issues quickly.",
+      bio: "Wipes the entire project and its commit history, and then blames AI for it.",
       availability: "Mon - Sat, 8 AM - 8 PM EST"
     },
     {
       id: 3,
       name: "Saad Zaidi",
-      role: "Community Manager",
+      role: "Backend + AI Developer",
       email: "k230874@nu.edu.pk",
       phone: "+1 (555) 345-6789",
       image: defaultImgURL,
-      bio: "Building connections between creators and donors, fostering a vibrant community.",
+      bio: "Building backend with efficient copilot vibe coding",
       availability: "Mon - Fri, 10 AM - 7 PM EST"
     }
   ]

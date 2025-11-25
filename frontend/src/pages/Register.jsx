@@ -434,7 +434,7 @@ export default function Register() {
 
                             {/* Profile Image Upload */}
                             <div>
-                                <label className="block text-sm font-semibold mb-2 text-gray-300">Profile Image (Optional)</label>
+                                <label className="block text-sm font-semibold mb-2 text-gray-300">Profile Image (Required)</label>
 
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-gray-800/30 border border-gray-700">
                                     {/* Image Preview */}
