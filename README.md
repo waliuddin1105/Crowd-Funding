@@ -48,12 +48,12 @@ CrowdFund bridges the gap between creators and backers by providing a secure, tr
 1. **Clone the repo:**  
 ```bash
 git clone https://github.com/Sajjadecoder/Crowd-funding.git
-
+```
 2. **Install the dependencies:**  
 ```bash
 cd backend && pip install -r requirements.txt
 cd frontend && npm install
-
+```
 3. **Configure environment variables**  
 ```bash
 //frontend
@@ -64,13 +64,13 @@ VITE_BACKEND_URL
 //backend
 SQLALCHEMY_DATABASE_URI
 SECRET_KEY
-
+```
 4. **Run backend**
 ```bash
 flask run
-
+```
 5. **Run frontend**
 ```bash
 npm run dev
-
+```
 
