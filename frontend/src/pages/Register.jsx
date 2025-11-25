@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "../components/ui/button"
 import { Mail, Lock, User, Sparkles, ArrowRight, AlertCircle, Users, Zap, Check, Upload, X, Image as ImageIcon } from "lucide-react"
 import { cn } from "../lib/utils.js"
+
 
 // Inline RoleCard component
 function RoleCard({ role, selected, onSelect }) {
@@ -11,20 +14,18 @@ function RoleCard({ role, selected, onSelect }) {
         <div
             onClick={onSelect}
             className={cn(
-                "relative cursor-pointer rounded-lg border p-4 transition-all duration-200 hover:scale-[1.01]",
+                "relative cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 hover:scale-[1.02]",
                 selected
-                    ? "border-cyan-400 bg-gradient-to-r from-blue-800 to-blue-700 shadow-[0_0_10px_rgba(0,255,255,0.25)]"
-                    : "border-gray-700 bg-gray-800 hover:border-cyan-400"
+                    ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20"
+                    : "border-gray-700 bg-gray-800/50 hover:border-blue-400/50 hover:bg-gray-800"
             )}
         >
             <div className="flex items-center gap-3">
                 <div
                     className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-md transition-all duration-200",
+                        "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-300",
                         selected
-                            ? isCreator
-                                ? "bg-purple-600 shadow-sm"
-                                : "bg-cyan-500 shadow-sm"
+                            ? "bg-blue-500 shadow-lg shadow-blue-500/30"
                             : "bg-gray-700"
                     )}
                 >
@@ -35,17 +36,21 @@ function RoleCard({ role, selected, onSelect }) {
                     )}
                 </div>
                 <div className="flex-1">
-                    <h3 className={cn("font-medium capitalize text-sm", selected ? "text-white" : "text-gray-300")}>
+                    <h3 className={cn("font-bold capitalize text-sm mb-0.5", selected ? "text-white" : "text-gray-300")}>
                         {role}
                     </h3>
-                    <p className="text-xs text-gray-400">
-                        {isCreator ? "Launch and manage campaigns" : "Support amazing projects"}
+                    <p className="text-xs text-gray-400 leading-tight">
+                        {isCreator ? "Launch campaigns" : "Support projects"}
                     </p>
                 </div>
             </div>
 
             {selected && (
-                <div className="absolute -inset-px rounded-lg bg-cyan-400 opacity-15 blur-sm" />
+                <div className="absolute top-2 right-2">
+                    <div className="bg-blue-500 rounded-full p-0.5">
+                        <Check className="h-2.5 w-2.5 text-white" />
+                    </div>
+                </div>
             )}
         </div>
     )
@@ -64,25 +69,30 @@ function PasswordStrength({ password }) {
     const strength = validChecks / checks.length
 
     return (
-        <div className="mt-2 space-y-1 text-xs">
+        <div className="mt-2 space-y-1.5 p-2.5 rounded-lg bg-gray-800/50 border border-gray-700">
             <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">Strength:</span>
-                <div className="flex-1 h-1 rounded-full bg-gray-700 overflow-hidden">
+                <span className="text-xs text-gray-400 font-medium">Strength:</span>
+                <div className="flex-1 h-1.5 rounded-full bg-gray-700 overflow-hidden">
                     <div
                         className={cn(
-                            "h-full transition-all duration-200",
-                            strength < 0.5 ? "bg-red-500" : strength < 0.8 ? "bg-yellow-400" : "bg-green-400"
+                            "h-full transition-all duration-300",
+                            strength < 0.5 ? "bg-red-500" : strength < 0.8 ? "bg-yellow-400" : "bg-green-500"
                         )}
                         style={{ width: `${strength * 100}%` }}
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-2 gap-1.5">
                 {checks.map((check, index) => (
-                    <div key={index} className="flex items-center gap-1 text-[11px]">
-                        <Check className={cn("h-3 w-3", check.valid ? "text-green-400" : "text-gray-500")} />
-                        <span className={cn(check.valid ? "text-green-400" : "text-gray-500")}>
+                    <div key={index} className="flex items-center gap-1 text-xs">
+                        <div className={cn(
+                            "flex items-center justify-center h-3 w-3 rounded-full",
+                            check.valid ? "bg-green-500/20" : "bg-gray-700"
+                        )}>
+                            <Check className={cn("h-2 w-2", check.valid ? "text-green-400" : "text-gray-500")} />
+                        </div>
+                        <span className={cn("font-medium text-[10px]", check.valid ? "text-green-400" : "text-gray-500")}>
                             {check.label}
                         </span>
                     </div>
@@ -93,6 +103,8 @@ function PasswordStrength({ password }) {
 }
 
 export default function Register() {
+    const navigate = useNavigate()
+    const { toast } = useToast()
     const [username, setUsername] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -104,9 +116,7 @@ export default function Register() {
     const [errors, setErrors] = useState({})
     const [touched, setTouched] = useState({})
 
-    const CLOUDINARY_UPLOAD_PRESET = "CrowdFund-Preset"
-    const CLOUDINARY_CLOUD_NAME = "sajjadahmed"
-
+    
     function validate() {
         const next = {}
         if (!username || username.trim().length < 2) next.username = "Please enter a username (min 2 chars)"
@@ -120,9 +130,12 @@ export default function Register() {
 
     async function uploadToCloudinary(file) {
         const formData = new FormData()
+        const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+        const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
         formData.append("file", file)
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-
+        const defaultImgURL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1763711531/default_pfp_w2lnen.jpg`
+            
         try {
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -137,7 +150,7 @@ export default function Register() {
             }
 
             const data = await response.json()
-            return data.secure_url // Returns the Cloudinary URL
+            return data.secure_url
         } catch (error) {
             console.error("Cloudinary upload error:", error)
             throw error
@@ -149,16 +162,23 @@ export default function Register() {
         if (!file) return
 
         if (!file.type.startsWith("image/")) {
-            alert("Please select a valid image file")
+            toast({
+                title: "Invalid File",
+                description: "Please select a valid image file",
+                variant: "destructive",
+            })
             return
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            alert("Image size should be less than 5MB")
+            toast({
+                title: "File Too Large",
+                description: "Image size should be less than 5MB",
+                variant: "destructive",
+            })
             return
         }
 
-        // Create preview
         const reader = new FileReader()
         reader.onloadend = () => {
             setImagePreview(reader.result)
@@ -169,9 +189,12 @@ export default function Register() {
         try {
             const imageUrl = await uploadToCloudinary(file)
             setProfileImage(imageUrl)
-            console.log("Image uploaded successfully:", imageUrl)
         } catch (error) {
-            alert("Failed to upload image. Please try again.")
+            toast({
+                title: "Upload Failed",
+                description: "Failed to upload image. Please try again.",
+                variant: "destructive",
+            })
             setImagePreview(null)
         } finally {
             setUploadingImage(false)
@@ -181,7 +204,6 @@ export default function Register() {
     function handleRemoveImage() {
         setProfileImage(null)
         setImagePreview(null)
-        // Reset file input
         const fileInput = document.getElementById("profile-image")
         if (fileInput) fileInput.value = ""
     }
@@ -198,7 +220,7 @@ export default function Register() {
                 email: email.toLowerCase().trim(),
                 password: password,
                 role: role,
-                profile_image: profileImage // Cloudinary URL or null
+                profile_image: profileImage || defaultImgURL
             }
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -213,20 +235,35 @@ export default function Register() {
             const data = await response.json()
 
             if (response.ok) {
-                alert(`Account created successfully! 🎉\nUser ID: ${data.user_id}`)
-                handleReset()
+                toast({
+                    title: "Account Created Successfully!",
+                    description: `Welcome ${username}! Redirecting to login page...`,
+                    variant: "default",
+                })
+
+                setTimeout(() => {
+                    navigate('/login')
+                }, 1500)
             } else {
-                // Handle backend errors
                 const errorMessage = data.Error || "Registration failed"
-                alert(`Error: ${errorMessage}`)
+                toast({
+                    title: "Registration Failed",
+                    description: errorMessage,
+                    variant: "destructive",
+                })
             }
         } catch (err) {
             console.error("Registration error:", err)
-            alert("Network error. Please check your connection and try again.")
+            toast({
+                title: "Network Error",
+                description: "Please check your connection and try again.",
+                variant: "destructive",
+            })
         } finally {
             setLoading(false)
         }
     }
+
 
     const handleReset = () => {
         setUsername("")
@@ -244,39 +281,46 @@ export default function Register() {
     const formDisabled = useMemo(() => loading, [loading])
 
     return (
-        <div className="min-h-screen bg-gray-900 relative overflow-hidden text-white">
-            {/* Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900/80" />
-            <div className="absolute top-24 left-6 w-48 h-48 bg-purple-600/12 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-12 right-6 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="min-h-screen relative overflow-hidden text-white">
+            {/* Background Image */}
+            <div className="absolute inset-0">
+                <img
+                    src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2000"
+                    alt="Crowdfunding background"
+                    className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gray-950/85" />
+            </div>
 
-            <main className="relative flex min-h-screen items-center justify-center p-3">
-                <div className="w-full max-w-xl animate-slide-up">
-                    <div className="bg-gray-800/80 border border-cyan-500 rounded-xl shadow-[0_0_12px_rgba(0,255,255,0.20)] backdrop-blur-sm p-4 lg:p-6">
+            {/* Animated particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-500/30 rounded-full animate-float"></div>
+                <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-blue-400/30 rounded-full animate-float-delayed"></div>
+                <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-blue-600/30 rounded-full animate-float-slow"></div>
+            </div>
+
+            <main className="relative flex min-h-screen items-center justify-center p-4 py-6">
+                <div className="w-full max-w-2xl animate-fade-in">
+                    <div className="bg-gray-900/90 border border-gray-800/50 rounded-2xl shadow-2xl backdrop-blur-xl p-6 lg:p-8">
 
                         {/* Header */}
                         <header className="text-center mb-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-700/20 rounded-full mb-4">
-                                <Sparkles className="h-4 w-4 text-cyan-400" />
-                                <span className="text-xs font-medium text-cyan-400">Join the Platform</span>
-                            </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-800 to-cyan-400 bg-clip-text text-transparent mb-2">
+                            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
                                 Create Your Account
                             </h1>
-                            <p className="text-sm text-gray-300 max-w-lg mx-auto">
-                                Join creators and donors building the future together
+                            <p className="text-sm text-gray-400">
+                                Join creators and donors building the future
                             </p>
                         </header>
 
                         {/* Form */}
                         <form onSubmit={onSubmit} className="space-y-4">
-                            
 
                             {/* Username */}
                             <div className="group">
-                                <label htmlFor="username" className="block text-sm font-semibold mb-1">Username</label>
+                                <label htmlFor="username" className="block text-sm font-semibold mb-1.5 text-gray-300">Username</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-cyan-400" />
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-blue-400" />
                                     <input
                                         id="username"
                                         name="username"
@@ -287,7 +331,7 @@ export default function Register() {
                                         onChange={(e) => { setUsername(e.target.value); if (touched.username) validate() }}
                                         onBlur={() => setTouched({ ...touched, username: true })}
                                         className={cn(
-                                            "w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400",
+                                            "w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border-2 border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm",
                                             errors.username && touched.username && "border-red-500 focus:ring-red-500"
                                         )}
                                         placeholder="Choose a unique username"
@@ -297,7 +341,7 @@ export default function Register() {
                                     )}
                                 </div>
                                 {errors.username && touched.username && (
-                                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                    <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                                         <AlertCircle className="h-3 w-3" />
                                         {errors.username}
                                     </p>
@@ -306,9 +350,9 @@ export default function Register() {
 
                             {/* Email */}
                             <div className="group">
-                                <label htmlFor="email" className="block text-sm font-semibold mb-1">Email Address</label>
+                                <label htmlFor="email" className="block text-sm font-semibold mb-1.5 text-gray-300">Email Address</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-cyan-400" />
+                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-blue-400" />
                                     <input
                                         id="email"
                                         name="email"
@@ -319,7 +363,7 @@ export default function Register() {
                                         onChange={(e) => { setEmail(e.target.value); if (touched.email) validate() }}
                                         onBlur={() => setTouched({ ...touched, email: true })}
                                         className={cn(
-                                            "w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400",
+                                            "w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border-2 border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm",
                                             errors.email && touched.email && "border-red-500 focus:ring-red-500"
                                         )}
                                         placeholder="you@example.com"
@@ -329,7 +373,7 @@ export default function Register() {
                                     )}
                                 </div>
                                 {errors.email && touched.email && (
-                                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                    <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                                         <AlertCircle className="h-3 w-3" />
                                         {errors.email}
                                     </p>
@@ -338,9 +382,9 @@ export default function Register() {
 
                             {/* Password */}
                             <div className="group">
-                                <label htmlFor="password" className="block text-sm font-semibold mb-1">Password</label>
+                                <label htmlFor="password" className="block text-sm font-semibold mb-1.5 text-gray-300">Password</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-cyan-400" />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-blue-400" />
                                     <input
                                         id="password"
                                         name="password"
@@ -351,7 +395,7 @@ export default function Register() {
                                         onChange={(e) => { setPassword(e.target.value); if (touched.password) validate() }}
                                         onBlur={() => setTouched({ ...touched, password: true })}
                                         className={cn(
-                                            "w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400",
+                                            "w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border-2 border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm",
                                             errors.password && touched.password && "border-red-500 focus:ring-red-500"
                                         )}
                                         placeholder="Create a strong password"
@@ -364,7 +408,7 @@ export default function Register() {
                                 {password && <PasswordStrength password={password} />}
 
                                 {errors.password && touched.password && (
-                                    <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                                    <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                                         <AlertCircle className="h-3 w-3" />
                                         {errors.password}
                                     </p>
@@ -373,7 +417,7 @@ export default function Register() {
 
                             {/* Role Selection */}
                             <div>
-                                <label className="block text-sm font-semibold mb-3">Choose Your Role</label>
+                                <label className="block text-sm font-semibold mb-2 text-gray-300">Choose Your Role</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <RoleCard
                                         role="creator"
@@ -387,11 +431,12 @@ export default function Register() {
                                     />
                                 </div>
                             </div>
-                                {/* Profile Image Upload */}
-                            <div>
-                                <label className="block text-sm font-semibold mb-2">Profile Image (Optional)</label>
 
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                            {/* Profile Image Upload */}
+                            <div>
+                                <label className="block text-sm font-semibold mb-2 text-gray-300">Profile Image (Optional)</label>
+
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-gray-800/30 border border-gray-700">
                                     {/* Image Preview */}
                                     <div className="flex-shrink-0 self-center sm:self-auto">
                                         {imagePreview ? (
@@ -399,20 +444,20 @@ export default function Register() {
                                                 <img
                                                     src={imagePreview}
                                                     alt="Profile preview"
-                                                    className="h-24 w-24 rounded-full object-cover border-2 border-cyan-400 shadow-md transition-transform duration-200 group-hover:scale-105"
+                                                    className="h-20 w-20 rounded-full object-cover border-4 border-blue-500 shadow-lg transition-transform duration-300 group-hover:scale-105"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={handleRemoveImage}
-                                                    className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 rounded-full p-1 transition-colors shadow-md"
+                                                    className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 rounded-full p-1.5 transition-all shadow-lg hover:scale-110"
                                                     disabled={uploadingImage}
                                                     title="Remove image"
                                                 >
-                                                    <X className="h-3.5 w-3.5 text-white" />
+                                                    <X className="h-3 w-3 text-white" />
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="h-24 w-24 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600 shadow-inner">
+                                            <div className="h-20 w-20 rounded-full bg-gray-700/50 flex items-center justify-center border-4 border-gray-600">
                                                 <ImageIcon className="h-8 w-8 text-gray-500" />
                                             </div>
                                         )}
@@ -423,13 +468,13 @@ export default function Register() {
                                         <label
                                             htmlFor="profile-image"
                                             className={cn(
-                                                "inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-md cursor-pointer transition-all font-medium text-sm",
+                                                "inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 rounded-xl cursor-pointer transition-all font-semibold text-white text-sm shadow-lg hover:shadow-blue-500/50 hover:scale-105",
                                                 uploadingImage && "opacity-50 cursor-not-allowed"
                                             )}
                                         >
                                             <Upload className="h-4 w-4" />
                                             <span>
-                                                {uploadingImage ? "Uploading..." : imagePreview ? "Change Image" : "Upload Image"}
+                                                {uploadingImage ? "Uploading..." : imagePreview ? "Change" : "Upload"}
                                             </span>
                                         </label>
 
@@ -442,28 +487,31 @@ export default function Register() {
                                             disabled={uploadingImage || loading}
                                         />
 
-                                        <p className="text-xs text-gray-400 mt-2 leading-snug">
-                                            Max size <span className="text-gray-300 font-medium">5MB</span> — JPG, PNG, or GIF only.
+                                        <p className="text-xs text-gray-400 mt-2">
+                                            Max <span className="text-gray-300 font-semibold">5MB</span> • JPG, PNG, GIF
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                 {/* Create Account button */}
                                 <button
                                     type="submit"
                                     disabled={loading || uploadingImage}
-                                    className="flex-1 group bg-gray-900 hover:bg-gray-800 text-cyan-400 font-semibold py-2 px-3 rounded-md shadow-md border border-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 group bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-blue-500/50 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                 >
                                     {loading ? (
-                                        "Creating..."
+                                        <span className="flex items-center justify-center gap-2 text-sm">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            Creating...
+                                        </span>
                                     ) : (
-                                        <div className="flex items-center justify-center gap-2">
-                                            <span>Create Account</span>
+                                        <span className="flex items-center justify-center gap-2 text-sm">
+                                            Create Account
                                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </div>
+                                        </span>
                                     )}
                                 </button>
 
@@ -472,7 +520,7 @@ export default function Register() {
                                     type="button"
                                     onClick={handleReset}
                                     disabled={loading || uploadingImage}
-                                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-cyan-400 font-semibold py-2 px-3 rounded-md shadow-md border border-cyan-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="sm:w-28 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm"
                                 >
                                     Reset
                                 </button>
@@ -481,14 +529,15 @@ export default function Register() {
                         </form>
 
                         {/* Footer */}
-                        <div className="mt-6 pt-4 border-t border-gray-700 text-center">
+                        <div className="mt-6 pt-4 border-t border-gray-700/50 text-center">
                             <p className="text-xs text-gray-400">
                                 Already have an account?{" "}
-                                <a
-                                    href="/login"
-                                    className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors underline-offset-4 hover:underline"
+
+                                <a href="/login"
+                                    className="font-bold text-blue-400 hover:text-blue-300 transition-colors underline-offset-4 hover:underline"
                                 >
-                                    Sign in
+
+                                    Sign in here
                                 </a>
                             </p>
                         </div>
@@ -496,6 +545,37 @@ export default function Register() {
                     </div>
                 </div>
             </main>
+
+            <style jsx>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px) translateX(0px); }
+                    50% { transform: translateY(-20px) translateX(10px); }
+                }
+                @keyframes float-delayed {
+                    0%, 100% { transform: translateY(0px) translateX(0px); }
+                    50% { transform: translateY(-30px) translateX(-15px); }
+                }
+                @keyframes float-slow {
+                    0%, 100% { transform: translateY(0px) translateX(0px); }
+                    50% { transform: translateY(-15px) translateX(20px); }
+                }
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-float {
+                    animation: float 6s ease-in-out infinite;
+                }
+                .animate-float-delayed {
+                    animation: float-delayed 8s ease-in-out infinite;
+                }
+                .animate-float-slow {
+                    animation: float-slow 10s ease-in-out infinite;
+                }
+                .animate-fade-in {
+                    animation: fade-in 0.6s ease-out;
+                }
+            `}</style>
         </div>
     )
 }

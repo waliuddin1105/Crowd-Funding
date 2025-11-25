@@ -102,7 +102,7 @@ class Campaigns(db.Model):
     raised_amount = db.Column(db.Numeric(10, 2), default=0)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
-    image = db.Column(db.String(100),nullable=False)
+    image = db.Column(db.String(255),nullable=False)
     status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
@@ -209,7 +209,6 @@ class Payments(db.Model):
     donation_id = db.Column(
         db.Integer, db.ForeignKey("donations.donation_id"), nullable=False
     )
-    amount = db.Column(db.Numeric(8, 2), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     payment_status = db.Column(db.Enum(CampaignPaymentStatus), nullable=False)
     transaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -222,7 +221,6 @@ class Payments(db.Model):
     def to_dict(self):
         return {
             "payment_id": self.payment_id,
-            "amount": float(self.amount),
             "payment_method": self.payment_method,
             "payment_status": self.payment_status.value,
             "transaction_date": self.transaction_date,
@@ -356,7 +354,7 @@ class AdminReviews(db.Model):
             "review_id": self.review_id,
             "decision": self.decision,
             "comments": self.comments,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat(),
             "admin": (
                 {"user_id": self.admin.user_id, "username": self.admin.username}
                 if self.admin

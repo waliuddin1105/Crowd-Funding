@@ -10,6 +10,5 @@ export function getToken() {
 export function logout() {
   localStorage.removeItem("access_token")
   localStorage.removeItem("user")
-  alert('logged out')
   window.location.href = "/"
 }

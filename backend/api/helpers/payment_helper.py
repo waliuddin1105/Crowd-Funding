@@ -227,7 +227,7 @@ def get_total_payment_amount():
     """Return the sum of amounts for COMPLETED payments only.
     Returns a dict with 'total_amount'.
     """
-    total = db.session.query(db.func.sum(Payments.amount)).filter(
+    total = db.session.query(db.func.sum(Donations.amount)).filter(
         Payments.payment_status == CampaignPaymentStatus.COMPLETED
     ).scalar()
     return {"total_amount": float(total or 0)}

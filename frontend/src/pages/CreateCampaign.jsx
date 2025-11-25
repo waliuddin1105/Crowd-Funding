@@ -34,8 +34,8 @@ import { getUser } from "@/lib/auth.js"
 import UnauthorizedBox from "@/components/UnauthorizedBox"
 
 const CATEGORIES = ["Medical", "Personal", "Emergency", "Charity", "Education"]
-
 export default function CreateCampaign() {
+    const default_campaign_img = 'https://res.cloudinary.com/sajjadahmed/image/upload/v1764063943/nano-banana-2025-11-25T09-10-18_raf9be.png'
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [user,setUser] = useState(null)
@@ -72,7 +72,7 @@ export default function CreateCampaign() {
                     title: data.title,
                     description: data.description,
                     goal_amount: data.goal_amount,
-                    image: data.image,
+                    image: data.image || default_campaign_img,
                     category: data.category,
                     raised_amount: 0,
                     start_date: new Date(data.start_date).toISOString(), // Convert to ISO string
@@ -110,7 +110,8 @@ export default function CreateCampaign() {
         }
     };
 
-
+    const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
     return (
         <>
             <Navbar />
@@ -303,12 +304,12 @@ export default function CreateCampaign() {
                                                                 if (file) {
                                                                     const formData = new FormData();
                                                                     formData.append("file", file);
-                                                                    formData.append("upload_preset", "CrowdFund-Preset");
-                                                                    formData.append("cloud_name", "sajjadahmed");
+                                                                    formData.append("upload_preset", `${CLOUDINARY_UPLOAD_PRESET}`);
+                                                                    formData.append("cloud_name", `${CLOUDINARY_CLOUD_NAME}`);
 
                                                                     try {
                                                                         const res = await fetch(
-                                                                            "https://api.cloudinary.com/v1_1/sajjadahmed/image/upload",
+                                                                            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                                                                             {
                                                                                 method: "POST",
                                                                                 body: formData,

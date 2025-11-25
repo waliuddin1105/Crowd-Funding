@@ -1,5 +1,5 @@
 from api import db, bcrypt
-from api.models.cf_models import Donations, DonationStatus
+from api.models.cf_models import Donations,DonationStatus
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 

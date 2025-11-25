@@ -1,5 +1,5 @@
 from flask_restx import Resource
-from flask import jsonify, request
+from flask import  request
 from api import db, comments_ns
 from api.models.cf_models import Campaigns, Users,Comments
 from sqlalchemy.orm import joinedload
@@ -18,48 +18,59 @@ class CommentDetails(Resource):
             if not message or not message.strip():
                 return {"success": False, "error": "Comment message is required."}, 400
 
-            new_comment = Comments(
-                user_id=user_id,
-                campaign_id=campaign_id,
-                content=message.strip(),
-                created_at=datetime.utcnow()
-            )
+            sql = text("""
+                SELECT * FROM post_comment(:u, :c, :m)
+            """)
 
-            db.session.add(new_comment)
+            result = db.session.execute(sql, {
+                "u": user_id,
+                "c": campaign_id,
+                "m": message.strip()
+            })
+
+            new_comment = result.fetchone()
+
             db.session.commit()
+
+            if not new_comment:
+                return {"success": False, "error": "Failed to insert comment."}, 500
+
+            comment_dict = {
+                "comment_id": new_comment.comment_id,
+                "user_id": new_comment.user_id,
+                "campaign_id": new_comment.campaign_id,
+                "content": new_comment.content,
+                "created_at": new_comment.created_at.isoformat(),
+                "likes": new_comment.likes 
+            }
 
             return {
                 "success": True,
-                "comment": new_comment.to_dict()
+                "comment": comment_dict
             }, 201
 
         except Exception as e:
+            import traceback
+            print("ERROR:", e)
+            traceback.print_exc()
             db.session.rollback()
             return {"success": False, "error": str(e)}, 500
+
 
 @comments_ns.route('/get-comments/<int:campaign_id>')
 class GetComments(Resource):
     def get(self, campaign_id):
         try:
-            
-            comments = (
-                db.session.query(
-                    Users.username,
-                    Users.user_id,
-                    Users.profile_image,
-                    Comments.likes,
-                    Comments.comment_id,
-                    Comments.content,
-                    Comments.created_at
-                )
-                .join(Users, Users.user_id == Comments.user_id)
-                .join(Campaigns, Campaigns.campaign_id == Comments.campaign_id)
-                .filter(Comments.campaign_id == campaign_id)
-                .order_by(Comments.created_at.desc())
-                .all()
-            )
+            sql = text("""
+                SELECT *
+                FROM comments_view
+                WHERE campaign_id = :c
+                ORDER BY created_at DESC
+            """)
 
-            result = [
+            result = db.session.execute(sql, {"c": campaign_id}).fetchall()
+
+            comments = [
                 {
                     "comment_id": c.comment_id,
                     "username": c.username,
@@ -69,11 +80,11 @@ class GetComments(Resource):
                     "content": c.content,
                     "created_at": c.created_at.isoformat() if c.created_at else None
                 }
-                for c in comments
+                for c in result
             ]
 
-            return {"success": True,
-                    "comments": result}, 200
+            return {"success": True, "comments": comments}, 200
+
         except Exception as e:
             db.session.rollback()
             return {"success": False, "error": str(e)}, 500
@@ -87,9 +98,7 @@ class ToggleLike(Resource):
             user = Users.query.get_or_404(user_id)
             comment = Comments.query.get_or_404(comment_id)
 
-            # Check if already liked
             if comment in user.liked_comments:
-                # Unlike (remove)
                 user.liked_comments.remove(comment)
                 comment.likes = max((comment.likes or 1) - 1, 0)
                 db.session.commit()
@@ -100,7 +109,6 @@ class ToggleLike(Resource):
                     "likes": comment.likes
                 }, 200
             else:
-                # Like (add)
                 user.liked_comments.append(comment)
                 comment.likes = (comment.likes or 0) + 1
                 db.session.commit()
