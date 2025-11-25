@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast.js';
 import { Eye, Ban } from 'lucide-react';
@@ -22,7 +22,7 @@ const ApprovedCampaigns = () => {
   const [activeCampaigns, setActiveCampaigns] = useState([]);
   const [completedCampaigns, setCompletedCampaigns] = useState([]);
 
-  const [searchTerm, setSearchTerm] = useState("");   // ⭐ NEW
+  const [searchTerm, setSearchTerm] = useState("");
 
   const navigate = useNavigate();
 
@@ -57,11 +57,11 @@ const ApprovedCampaigns = () => {
 
   const getCategoryStyle = (category) => {
     const styles = {
-      medical: 'bg-red-500/10 text-red-500 border-red-500/20',
-      education: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-      emergency: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-      charity: 'bg-green-500/10 text-green-500 border-green-500/20',
-      personal: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+      medical: 'bg-red-500/10 text-red-400 border-red-500/20',
+      education: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      emergency: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+      charity: 'bg-green-500/10 text-green-400 border-green-500/20',
+      personal: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     };
     return styles[category] || 'bg-muted text-muted-foreground';
   };
@@ -79,7 +79,6 @@ const ApprovedCampaigns = () => {
     navigate(`/all-campaigns/${id}`);
   };
 
-  // ⭐ FILTERED LISTS
   const filteredActive = activeCampaigns.filter(c =>
     c.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -88,131 +87,165 @@ const ApprovedCampaigns = () => {
   );
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Approved Campaigns</CardTitle>
-              <CardDescription>Active and completed campaigns</CardDescription>
-            </div>
-
-            {/* ⭐ SEARCH BAR */}
-            <input
-              type="text"
-              placeholder="Search campaigns..."
-              className="border rounded-md px-3 py-2 w-64"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+    <Card className="bg-gray-900/70 border border-gray-800 text-gray-200 backdrop-blur-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-gray-100">Approved Campaigns</CardTitle>
+            <CardDescription className="text-gray-400">
+              Active and completed campaigns
+            </CardDescription>
           </div>
-        </CardHeader>
 
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Creator</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+          <input
+            type="text"
+            placeholder="Search campaigns..."
+            className="bg-gray-800/50 border border-gray-700 text-gray-300 rounded-md px-3 py-2 w-64 focus:outline-none backdrop-blur-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <Table>
+          <TableHeader className="bg-gray-900/70 ">
+            <TableRow>
+              <TableHead className="text-gray-300">Campaign</TableHead>
+              <TableHead className="text-gray-300">Creator</TableHead>
+              <TableHead className="text-gray-300">Category</TableHead>
+              <TableHead className="text-gray-300">Progress</TableHead>
+              <TableHead className="text-gray-300">Status</TableHead>
+              <TableHead className="text-gray-300">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {filteredActive.map((campaign) => (
+              <TableRow
+                key={campaign.campaign_id}
+                className="border-gray-800"
+              >
+                <TableCell className="font-medium text-gray-100">
+                  {campaign.title}
+                </TableCell>
+
+                <TableCell className="text-gray-300">
+                  {campaign.creator.username}
+                </TableCell>
+
+                <TableCell>
+                  <Badge className={getCategoryStyle(campaign.category)} variant="outline">
+                    {campaign.category}
+                  </Badge>
+                </TableCell>
+
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="text-sm text-gray-300">
+                      {formatCurrency(campaign.raised_amount)} / {formatCurrency(campaign.goal_amount)}
+                    </div>
+                    <Progress
+                      value={(campaign.raised_amount / campaign.goal_amount) * 100}
+                      className="h-2 bg-gray-700 [&>div]:bg-green-500"
+                    />
+                  </div>
+                </TableCell>
+
+
+                <TableCell>
+                  <Badge variant={getStatusBadge(campaign.status)}>
+                    {campaign.status}
+                  </Badge>
+                </TableCell>
+
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gray-300 hover:bg-gray-800"
+                      onClick={() => handleEyeClick(campaign.campaign_id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gray-300 hover:bg-gray-800"
+                    >
+                      {/* <Ban className="h-4 w-4" /> */}
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
+            ))}
 
-            <TableBody>
-              {/* ⭐ ACTIVE CAMPAIGNS */}
-              {filteredActive.map((campaign) => (
-                <TableRow key={campaign.campaign_id}>
-                  <TableCell>
-                    <div className="font-medium">{campaign.title}</div>
-                  </TableCell>
+            {filteredCompleted.map((campaign) => (
+              <TableRow
+                key={campaign.campaign_id}
+                className="border-gray-800"
+              >
+                <TableCell className="font-medium text-gray-100">
+                  {campaign.title}
+                </TableCell>
 
-                  <TableCell>{campaign.creator.username}</TableCell>
+                <TableCell className="text-gray-300">
+                  {campaign.creator.username}
+                </TableCell>
 
-                  <TableCell>
-                    <Badge className={getCategoryStyle(campaign.category)} variant="outline">
-                      {campaign.category}
-                    </Badge>
-                  </TableCell>
+                <TableCell>
+                  <Badge className={getCategoryStyle(campaign.category)} variant="outline">
+                    {campaign.category}
+                  </Badge>
+                </TableCell>
 
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="text-sm">
-                        {formatCurrency(campaign.raised_amount)} / {formatCurrency(campaign.goal_amount)}
-                      </div>
-                      <Progress value={(campaign.raised_amount / campaign.goal_amount) * 100} />
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="text-sm text-gray-300">
+                      {formatCurrency(campaign.raised_amount)} / {formatCurrency(campaign.goal_amount)}
                     </div>
-                  </TableCell>
+                    <Progress
+                      value={(campaign.raised_amount / campaign.goal_amount) * 100}
+                      className="h-2 bg-gray-700"
+                    />
+                  </div>
+                </TableCell>
 
-                  <TableCell>
-                    <Badge variant={getStatusBadge(campaign.status)}>
-                      {campaign.status}
-                    </Badge>
-                  </TableCell>
+                <TableCell>
+                  <Badge variant={getStatusBadge(campaign.status)}>
+                    {campaign.status}
+                  </Badge>
+                </TableCell>
 
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleEyeClick(campaign.campaign_id)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost">
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gray-300 hover:bg-gray-800"
+                      onClick={() => handleEyeClick(campaign.campaign_id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
 
-              {/* ⭐ COMPLETED CAMPAIGNS */}
-              {filteredCompleted.map((campaign) => (
-                <TableRow key={campaign.campaign_id}>
-                  <TableCell>
-                    <div className="font-medium">{campaign.title}</div>
-                  </TableCell>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-gray-300 hover:bg-gray-800"
+                    >
+                      {/* <Ban className="h-4 w-4" /> */}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
 
-                  <TableCell>{campaign.creator.username}</TableCell>
-
-                  <TableCell>
-                    <Badge className={getCategoryStyle(campaign.category)} variant="outline">
-                      {campaign.category}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="text-sm">
-                        {formatCurrency(campaign.raised_amount)} / {formatCurrency(campaign.goal_amount)}
-                      </div>
-                      <Progress value={(campaign.raised_amount / campaign.goal_amount) * 100} />
-                    </div>
-                  </TableCell>
-
-                  <TableCell>
-                    <Badge variant={getStatusBadge(campaign.status)}>
-                      {campaign.status}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleEyeClick(campaign.campaign_id)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost">
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 

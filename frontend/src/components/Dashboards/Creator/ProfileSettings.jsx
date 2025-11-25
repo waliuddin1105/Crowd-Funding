@@ -9,7 +9,6 @@ import { getToken } from "@/lib/auth.js"
 
 function ProfileSettings() {
   const { toast } = useToast()
-
   const user = JSON.parse(localStorage.getItem("user"))
   const backendUrl = import.meta.env.VITE_BACKEND_URL
 
@@ -79,7 +78,6 @@ function ProfileSettings() {
 
     if (data?.Success) {
       localStorage.setItem("user", JSON.stringify(data.user))
-
       toast({
         title: "Profile Updated",
         description: "Your account details were saved successfully!",
@@ -94,69 +92,81 @@ function ProfileSettings() {
   }
 
   return (
-    <Card>
+    <Card className="bg-gray-900/50 border border-gray-800/50 shadow-2xl rounded-2xl">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-white">
           <User className="h-5 w-5" />
           Profile Settings
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* PROFILE IMAGE */}
         <div className="flex flex-col items-start gap-3">
-          <Label className="text-sm font-medium">Profile Image</Label>
+          <Label className="text-sm font-medium text-gray-300">Profile Image</Label>
 
           {profileImage && (
             <img
               src={profileImage}
               alt="profile"
-              className="w-24 h-24 rounded-full border object-cover"
+              className="w-24 h-24 rounded-full border border-gray-700 object-cover"
             />
           )}
 
           <div className="flex items-center gap-2">
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            <ImagePlus />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="bg-gray-800/30 text-white border border-gray-700"
+            />
+            <ImagePlus className="text-white" />
           </div>
 
           {uploading && (
-            <p className="text-sm text-muted-foreground">Uploading...</p>
+            <p className="text-sm text-gray-400">Uploading...</p>
           )}
         </div>
 
         {/* USER FIELDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Username</Label>
+            <Label className="text-gray-300">Username</Label>
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
+              className="bg-gray-800/30 text-white border border-gray-700"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label className="text-gray-300">Email</Label>
             <Input
               value={email}
               type="email"
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email"
+              className="bg-gray-800/30 text-white border border-gray-700"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>New Password (optional)</Label>
+            <Label className="text-gray-300">New Password (optional)</Label>
             <Input
               type="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter new password"
+              className="bg-gray-800/30 text-white border border-gray-700"
             />
           </div>
         </div>
 
-        <Button onClick={handleUpdate} disabled={loading || uploading}>
+        <Button
+          onClick={handleUpdate}
+          disabled={loading || uploading}
+          className="bg-blue-500 text-white hover:bg-blue-600"
+        >
           {loading ? "Saving..." : "Save Changes"}
         </Button>
       </CardContent>

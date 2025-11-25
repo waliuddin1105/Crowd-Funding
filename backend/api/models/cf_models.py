@@ -102,7 +102,7 @@ class Campaigns(db.Model):
     raised_amount = db.Column(db.Numeric(10, 2), default=0)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
-    image = db.Column(db.String(100),nullable=False)
+    image = db.Column(db.String(255),nullable=False)
     status = db.Column(db.Enum(CampaignStatus), default=CampaignStatus.pending)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(

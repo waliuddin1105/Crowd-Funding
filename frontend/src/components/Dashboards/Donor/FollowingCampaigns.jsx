@@ -7,11 +7,11 @@ import { useNavigate } from "react-router-dom"
 
 const getCategoryStyle = (category) => {
   const styles = {
-    charity: "bg-blue-500 text-white",
-    medical: "bg-red-500 text-white",
-    education: "bg-green-500 text-white",
-    emergency: "bg-orange-500 text-white",
-    personal: "bg-purple-500 text-white"
+    charity: "bg-blue-400 text-white",
+    medical: "bg-red-400 text-white",
+    education: "bg-green-400 text-white",
+    emergency: "bg-orange-400 text-white",
+    personal: "bg-purple-400 text-white"
   }
   return styles[category] || styles.personal
 }
@@ -21,13 +21,14 @@ function FollowingCampaigns() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
+
   useEffect(() => {
     const user = getUser()
     if (!user || !user.user_id) return
-    
     fetchFollowing(user.user_id)
   }, [])
-  const handleClick = (campaign_id)=>{
+
+  const handleClick = (campaign_id) => {
     navigate(`/all-campaigns/${campaign_id}`)
   }
 
@@ -36,9 +37,7 @@ function FollowingCampaigns() {
       setLoading(true)
       const backendUrl = import.meta.env.VITE_BACKEND_URL
       const res = await fetch(`${backendUrl}/follows/get-following/${donorId}`)
-
       if (!res.ok) throw new Error("Failed to fetch followed campaigns")
-
       const data = await res.json()
       setCampaigns(data.following || [])
     } catch (err) {
@@ -50,68 +49,61 @@ function FollowingCampaigns() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Campaigns You Follow</CardTitle>
-        <CardDescription>
-          Quick access to campaigns you're interested in
-        </CardDescription>
-      </CardHeader>
+    <Card className="bg-gray-900/50 border border-gray-800/50 backdrop-blur-sm shadow-2xl">
+  <CardHeader>
+    <CardTitle className="text-white">Campaigns You Follow</CardTitle>
+    <CardDescription className="text-gray-300">
+      Quick access to campaigns you're interested in
+    </CardDescription>
+  </CardHeader>
 
-      <CardContent>
-        {/* Loading */}
-        {loading && <p>Loading...</p>}
+  <CardContent>
+    {loading && <p className="text-gray-400">Loading...</p>}
+    {error && <p className="text-red-500">{error}</p>}
+    {!loading && campaigns.length === 0 && (
+      <p className="text-gray-400">You are not following any campaigns.</p>
+    )}
 
-        {/* Error */}
-        {error && <p className="text-red-500">{error}</p>}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {campaigns.map((campaign) => (
+        <div
+          key={campaign.campaign_id}
+          className="relative group overflow-hidden rounded-xl border border-gray-800/50 bg-gray-900/50 backdrop-blur-sm shadow-2xl transition-all hover:scale-105"
+        >
+          <img
+            src={campaign.image}
+            alt={campaign.title}
+            className="w-full h-48 object-cover rounded-t-xl"
+          />
 
-        {/* No Following */}
-        {!loading && campaigns.length === 0 && (
-          <p className="text-muted-foreground">You are not following any campaigns.</p>
-        )}
+          <div className="p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-1 rounded-full ${getCategoryStyle(campaign.category)}`}>
+                {campaign.category}
+              </span>
+              <span className="text-xs px-2 py-1 rounded-full bg-gray-700/50 text-gray-200">
+                {campaign.status}
+              </span>
+            </div>
 
-        {/* Campaign Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {campaigns.map((campaign) => (
-    <div
-      key={campaign.campaign_id}
-      className="relative group overflow-hidden rounded-lg border hover:shadow-lg transition-all"
-    >
-      <img
-        src={campaign.image}
-        alt={campaign.title}
-        className="w-full h-48 object-cover"
-      />
+            <h4 className="font-semibold text-white mt-1">{campaign.title}</h4>
 
-      <div className="p-4">
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${getCategoryStyle(
-              campaign.category
-            )}`}
-          >
-            {campaign.category}
-          </span>
+            <Button
+  variant="outline"
+  size="sm"
+  className="w-full mt-2 text-green-400 border-green-400 bg-primary hover:bg-green-500/20"
+  onClick={() => handleClick(campaign.campaign_id)}
+>
+  View Details
+</Button>
 
-          <span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700">
-            {campaign.status}
-          </span>
+          </div>
         </div>
-
-        <h4 className="font-semibold text-foreground mt-2">
-          {campaign.title}
-        </h4>
-
-        <div className="flex gap-2 mt-3" onClick={() => handleClick(campaign.campaign_id)}>
-          <Button className="flex-1" size="sm">View Details</Button>
-        </div>
-      </div>
+      ))}
     </div>
-  ))}
-</div>
+  </CardContent>
+</Card>
 
-      </CardContent>
-    </Card>
   )
 }
 

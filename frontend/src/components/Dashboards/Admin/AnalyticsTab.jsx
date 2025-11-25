@@ -44,22 +44,32 @@ function AnalyticsTab() {
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      <Card>
+      <Card className="bg-gray-900/70 border border-gray-700">
         <CardHeader>
-          <CardTitle>Top 5 Funded Campaigns</CardTitle>
-          <CardDescription>Highest performing campaigns</CardDescription>
+          <CardTitle className="text-gray-100">Top 5 Funded Campaigns</CardTitle>
+          <CardDescription className="text-gray-300">
+            Highest performing campaigns
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {topCampaigns.slice(0, 5).map((campaign, index) => (
-              <div key={campaign.campaign_id} className="flex items-center gap-3">
+              <div
+                key={campaign.campaign_id}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800/40"
+              >
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{campaign.title}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {formatCurrency(campaign.raised_amount)} • {campaign.donor_count == 1 ? "1 donor" : `${ campaign.donor_count} donors`}
+                  <div className="font-medium text-gray-100 truncate">
+                    {campaign.title}
+                  </div>
+                  <div className="text-sm text-gray-300">
+                    {formatCurrency(campaign.raised_amount)} •{' '}
+                    {campaign.donor_count === 1
+                      ? '1 donor'
+                      : `${campaign.donor_count} donors`}
                   </div>
                 </div>
               </div>

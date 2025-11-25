@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 import { getUser } from "@/lib/auth"
 
 import {
@@ -14,20 +19,22 @@ import {
 } from "@/components/ui/dialog"
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(amount)
 }
+
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
+    return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    })
+}
+
 function ActiveCampaigns() {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -72,7 +79,7 @@ function ActiveCampaigns() {
             const data = await res.json()
             setSelectedCampaign((prev) => ({
                 ...prev,
-                updates: data.updates || []
+                updates: data.updates || [],
             }))
         } catch (err) {
             console.error(err)
@@ -87,62 +94,73 @@ function ActiveCampaigns() {
         fetchCampaignUpdates(campaign.campaign_id)
     }
 
+    if (loading) {
+        return <p className="text-center text-gray-400 py-12">Loading active campaigns...</p>
+    }
+
+    if (error) {
+        return <p className="text-center text-red-500 py-12">{error}</p>
+    }
+
+    if (activeCampaigns.length === 0) {
+        return (
+            <p className="text-center text-gray-400 py-12">
+                You have no active campaigns you are supporting.
+            </p>
+        )
+    }
+
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Active Campaigns You Support</CardTitle>
-                    <CardDescription>
-                        Track the progress of campaigns you've donated to
-                    </CardDescription>
-                </CardHeader>
+            <div className="space-y-6">
+                {activeCampaigns.map((campaign) => {
+                    const progress = campaign.goal_amount
+                        ? Math.round((campaign.raised_amount / campaign.goal_amount) * 100)
+                        : 0
 
-                <CardContent>
-                    <div className="space-y-6">
-                        {activeCampaigns.map((campaign) => {
-                            const progress = campaign.goal_amount
-                                ? Math.round((campaign.raised_amount / campaign.goal_amount) * 100)
-                                : 0
+                    return (
+                        <Card
+                            key={campaign.campaign_id}
+                            className="bg-gray-900/50 border border-gray-800/50 backdrop-blur-sm shadow-2xl"
+                        >
+                            <CardContent className="space-y-4 pt-5">
+                                <div className="flex justify-between items-start">
+                                    <h4 className="font-semibold text-white">{campaign.title}</h4>
+                                    {/* Lighter % Funded badge */}
+                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-700/70 text-white">
+                                        {progress}% Funded
+                                    </span>
+                                </div>
 
-                            return (
-                                <div key={campaign.campaign_id} className="p-4 border rounded-lg space-y-3">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="font-semibold text-foreground">{campaign.title}</h4>
-                                        <Badge variant="outline">{progress}% Funded</Badge>
+                                <div className="space-y-2">
+                                    <Progress
+                                        value={progress}
+                                        className="h-2 bg-gray-700/40 [&>div]:bg-green-500"
+                                    />
+                                    <div className="flex justify-between text-sm text-gray-300">
+                                        <span>{formatCurrency(campaign.raised_amount)} raised</span>
+                                        <span>Goal: {formatCurrency(campaign.goal_amount)}</span>
                                     </div>
+                                </div>
 
-                                    <div className="space-y-2">
-                                        <Progress value={progress} className="h-2" />
 
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">
-                                                {formatCurrency(campaign.raised_amount)} raised
-                                            </span>
-                                            <span className="text-muted-foreground">
-                                                Goal: {formatCurrency(campaign.goal_amount)}
-                                            </span>
-                                        </div>
-                                    </div>
+                                {/* ---------- View Updates Dialog ---------- */}
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            className="w-full text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 transition-colors"
+                                            size="sm"
+                                            onClick={() => handleViewUpdates(campaign)}
+                                        >
+                                            View Campaign Updates
+                                        </Button>
+                                    </DialogTrigger>
 
-                                    {/* ---------- View Updates Dialog ---------- */}
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-full"
-                                                size="sm"
-                                                onClick={() => handleViewUpdates(campaign)}
-                                            >
-                                                View Campaign Updates
-                                            </Button>
-                                        </DialogTrigger>
-
-                                        {selectedCampaign && selectedCampaign.campaign_id === campaign.campaign_id && (
-                                            <DialogContent>
+                                    {selectedCampaign &&
+                                        selectedCampaign.campaign_id === campaign.campaign_id && (
+                                            <DialogContent className="bg-gray-900 text-white">
                                                 <DialogHeader>
-                                                    <DialogTitle>
-                                                        Updates – {selectedCampaign.title}
-                                                    </DialogTitle>
+                                                    <DialogTitle>Updates – {selectedCampaign.title}</DialogTitle>
                                                 </DialogHeader>
 
                                                 {updatesLoading ? (
@@ -152,8 +170,13 @@ function ActiveCampaigns() {
                                                 ) : selectedCampaign.updates?.length ? (
                                                     <div className="mt-4 space-y-4">
                                                         {selectedCampaign.updates.map((u, i) => (
-                                                            <div key={i} className="p-3 border rounded-lg bg-muted/20">
-                                                                <p className="text-xs text-muted-foreground">{formatDate(u.created_at)}</p>
+                                                            <div
+                                                                key={i}
+                                                                className="p-3 border rounded-lg bg-gray-800/50"
+                                                            >
+                                                                <p className="text-xs text-gray-400">
+                                                                    {formatDate(u.created_at)}
+                                                                </p>
                                                                 <p className="mt-1 text-sm">{u.content}</p>
                                                             </div>
                                                         ))}
@@ -163,14 +186,13 @@ function ActiveCampaigns() {
                                                 )}
                                             </DialogContent>
                                         )}
-                                    </Dialog>
-                                    {/* ------------------------------------------ */}
-                                </div>
-                            )
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
+                                </Dialog>
+                                {/* ------------------------------------------ */}
+                            </CardContent>
+                        </Card>
+                    )
+                })}
+            </div>
         </>
     )
 }

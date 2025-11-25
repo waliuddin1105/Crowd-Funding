@@ -72,7 +72,7 @@ api.add_namespace(follows_ns, '/follows')
 api.add_namespace(campaign_updates_ns, '/campaign-updates')
 api.add_namespace(admin_reviews_ns,'/admin-reviews')
 api.add_namespace(creator_ns,'/creator')
-# api.add_namespace(chat_ns, '/chat') #penda ne rag mei dali hoyi, ab isko chherio nh saad
+# api.add_namespace(chat_ns, '/chat')
 
 # Force SQLAlchemy to configure all mappers
 try:
@@ -90,8 +90,6 @@ import api.routes.comments
 import api.routes.donationsRoutes
 import api.routes.creatorDashboardRoutes
 import api.routes.payments
-# import api.routes.updates
 import api.routes.follows
-# import api.routes.campaign_updates
 import api.routes.admin_reviews
 # from api.routes.rag import chat_ns  #in RAG folder so created different namespace

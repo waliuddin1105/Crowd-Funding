@@ -5,12 +5,24 @@ from api.helpers.security_helper import jwt_required
 from api.models.cf_models import Donations,Campaigns,Payments,Users
 from sqlalchemy import func,distinct
 from api import db
+from flask import request
 @payments_ns.route('/transaction-history')
 class TransactionHistory(Resource):
     def get(self):
-        """Fetch transaction history from Payments table"""
+        """Fetch paginated transaction history from Payments table"""
         try:
-            payments = db.session.query(Payments).order_by(Payments.transaction_date.desc()).all()
+            page = request.args.get("page", 1, type=int)
+            limit = request.args.get("limit", 5, type=int)
+            offset = (page - 1) * limit
+
+            base_query = (
+                db.session.query(Payments)
+                .order_by(Payments.transaction_date.desc())
+            )
+
+            total_records = base_query.count()
+
+            payments = base_query.offset(offset).limit(limit).all()
 
             result = []
             for p in payments:
@@ -35,7 +47,14 @@ class TransactionHistory(Resource):
                 }
                 result.append(transaction)
 
-            return {"status": "success", "data": result}, 200
+            return {
+                "status": "success",
+                "page": page,
+                "limit": limit,
+                "total_records": total_records,
+                "total_pages": (total_records + limit - 1) // limit,
+                "data": result
+            }, 200
 
         except Exception as e:
             db.session.rollback()

@@ -6,12 +6,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast.js';
 import { Edit, Shield, Plus } from 'lucide-react';
+import ProfileSettings from '../Creator/ProfileSettings';
 
 const AdminControls = () => {
   const { toast } = useToast();
   const [showAddAdmin, setShowAddAdmin] = useState(false);
-  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-  const defaultImgURL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1763711531/default_pfp_w2lnen.jpg`
+
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const defaultImgURL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1763711531/default_pfp_w2lnen.jpg`;
+
   const [newAdmin, setNewAdmin] = useState({
     username: '',
     email: '',
@@ -25,79 +28,72 @@ const AdminControls = () => {
   };
 
   const handleAddAdmin = async () => {
-  console.log('Adding new admin:', newAdmin);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  try {
-    const response = await fetch(`${backendUrl}/users/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newAdmin)
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast({
-        title: 'Admin Added',
-        description: `${newAdmin.username} has been added as an admin.`,
+    try {
+      const response = await fetch(`${backendUrl}/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAdmin)
       });
-      // Reset form
-      setNewAdmin({ username: '', email: '', password: '', role: 'admin' });
-      setShowAddAdmin(false);
-    } else {
-      // Backend returned an error
-      console.error('Error adding admin:', data);
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Admin Added',
+          description: `${newAdmin.username} has been added as an admin.`,
+        });
+
+        setNewAdmin({ username: '', email: '', password: '', role: 'admin' });
+        setShowAddAdmin(false);
+      } else {
+        toast({
+          title: 'Failed to Add Admin',
+          description: data.Error || 'An unknown error occurred',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
       toast({
-        title: 'Failed to Add Admin',
-        description: data.Error || 'An unknown error occurred',
+        title: 'Network Error',
+        description: 'Please check your connection and try again.',
         variant: 'destructive',
       });
     }
-  } catch (err) {
-    // Network or other errors
-    console.error('Network error:', err);
-    toast({
-      title: 'Network Error',
-      description: 'Please check your connection and try again.',
-      variant: 'destructive',
-    });
-  }
-};
-
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-md rounded-2xl bg-transparent text-foreground border border-border">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Admin Accounts & Roles</CardTitle>
-              <CardDescription>Manage admin users and their permissions</CardDescription>
+              <CardTitle className="text-xl text-white font-semibold">Admin Accounts & Roles</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Manage admin users and their permissions
+              </CardDescription>
             </div>
-            <Button onClick={() => setShowAddAdmin(!showAddAdmin)}>
+
+            <Button 
+              variant="default" 
+              onClick={() => setShowAddAdmin(!showAddAdmin)}
+              className="rounded-lg bg-green-700 hover:bg-green-800"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Admin
             </Button>
           </div>
         </CardHeader>
 
+        {/* Add Admin Form */}
         {showAddAdmin && (
-          <CardContent className="border-t border-gray-200 space-y-4">
-            <div className="space-y-2">
+          <CardContent className="border-t border-border/60 pt-6 space-y-4 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 name="username"
-                placeholder="Full Name"
+                placeholder="Username"
+                className=" border-border text-foreground"
                 value={newAdmin.username}
                 onChange={handleInputChange}
               />
@@ -105,6 +101,7 @@ const AdminControls = () => {
                 name="email"
                 type="email"
                 placeholder="Email Address"
+                className=" border-border text-foreground"
                 value={newAdmin.email}
                 onChange={handleInputChange}
               />
@@ -112,40 +109,27 @@ const AdminControls = () => {
                 name="password"
                 type="password"
                 placeholder="Password"
+                className="border-border text-foreground"
                 value={newAdmin.password}
                 onChange={handleInputChange}
               />
-              <Button onClick={handleAddAdmin} className="w-full">
-                Add Admin
-              </Button>
             </div>
+
+            <Button 
+              onClick={handleAddAdmin} 
+              className="w-full md:w-auto rounded-lg"
+            >
+              Add Admin
+            </Button>
           </CardContent>
         )}
 
-        <CardContent>
+        {/* Admin List */}
+        <CardContent className="pt-6">
           <div className="space-y-4">
-            <div className="border rounded-lg p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" />
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium">Admin User</div>
-                  <div className="text-sm text-muted-foreground">admin@platform.com</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge>
-                  <Shield className="mr-1 h-3 w-3" />
-                  Super Admin
-                </Badge>
-                <Button size="sm" variant="outline">
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </div>
+            {/* Example Admin Card */}
+              <ProfileSettings />
             </div>
-          </div>
         </CardContent>
       </Card>
     </>

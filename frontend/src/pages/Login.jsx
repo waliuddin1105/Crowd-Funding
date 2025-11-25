@@ -31,7 +31,6 @@ export default function Login() {
       const data = await res.json()
 
       if (res.ok) {
-        console.log("[Login Success]", data)
         localStorage.setItem("access_token", data["access_token"])
         localStorage.setItem("user", JSON.stringify(data.user))
 
@@ -64,15 +63,25 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 relative overflow-hidden text-white">
-      {/* subtle decorative background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900/80" />
-      <div className="absolute top-24 left-6 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-12 right-6 w-72 h-72 bg-cyan-500/08 rounded-full blur-3xl animate-pulse delay-1000" />
+    <main
+      className="min-h-screen relative overflow-hidden text-white"
+      style={{
+        backgroundImage: 'url("/background_login_page.png")', // replace with your file name
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/40 via-gray-800/30 to-gray-900/40" />
 
-      <div className="relative flex min-h-screen items-center justify-center p-4">
+      {/* Pulses with less blur and opacity */}
+      <div className="absolute top-24 left-6 w-48 h-48 bg-purple-600/5 rounded-full blur-2xl animate-pulse" />
+      <div className="absolute bottom-12 right-6 w-72 h-72 bg-cyan-500/5 rounded-full blur-2xl animate-pulse delay-1000" />
+
+      <div className="relative ml-10 flex min-h-screen items-center justify-start p-4">
         <div className="w-full max-w-xl">
-          <div className="bg-gray-800/80 border border-cyan-500 rounded-xl shadow-[0_0_12px_rgba(0,255,255,0.14)] backdrop-blur-sm p-6 lg:p-8">
+          <div className="bg-gray-800/70 border border-cyan-500 rounded-xl shadow-[0_0_12px_rgba(0,255,255,0.14)] backdrop-blur-sm p-6 lg:p-8">
             <header className="text-center mb-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-700/20 rounded-full mb-4">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
@@ -129,12 +138,6 @@ export default function Login() {
                     placeholder="••••••••"
                   />
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <a href="/forgot" className="text-sm text-cyan-400 hover:text-cyan-300 underline-offset-4 hover:underline">
-                  Forgot password?
-                </a>
               </div>
 
               <div>

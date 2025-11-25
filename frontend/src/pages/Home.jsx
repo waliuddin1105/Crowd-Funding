@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import Navbar from "@/components/Navbar"
 import { Link } from "react-router-dom"
 import axios from "axios"
+import FAQs from "@/components/FAQs"
 
 
 function formatCurrency(n) {
@@ -263,9 +264,7 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-bold">Fully funded on Crowdfund</h2>
                 <p className="text-gray-400 mt-2">Celebrating success stories from our community</p>
               </div>
-              <Link to={"/all-campaigns"} className="text-sm text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2 group">
-                See more <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
+              
             </div>
             <div className="mt-6 flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
               {campaigns.map((p) => {
@@ -336,6 +335,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <FAQs />
       </main>
 
       <style jsx>{`

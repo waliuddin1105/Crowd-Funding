@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const UsersTab = () => {
   const [creators, setCreators] = useState([]);
@@ -15,16 +14,14 @@ const UsersTab = () => {
 
   const [donorPage, setDonorPage] = useState(1);
   const [donorTotalPages, setDonorTotalPages] = useState(1);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const perPage = 5;
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
-  };
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   // Fetch creators
   const fetchCreators = async (page = 1) => {
@@ -62,25 +59,24 @@ const UsersTab = () => {
   return (
     <>
       {/* Creators */}
-      <Card className="mb-6">
+      <Card className="mb-6 bg-gray-900/70 border border-gray-700">
         <CardHeader>
-          <CardTitle>Campaign Creators</CardTitle>
-          <CardDescription>Registered creators and their statistics</CardDescription>
+          <CardTitle className="text-gray-100">Campaign Creators</CardTitle>
+          <CardDescription className="text-gray-300">Registered creators and their statistics</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Creator</TableHead>
-                <TableHead>Campaigns</TableHead>
-                <TableHead>Total Raised</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-gray-200">Creator</TableHead>
+                <TableHead className="text-gray-200">Campaigns</TableHead>
+                <TableHead className="text-gray-200">Total Raised</TableHead>
+                <TableHead className="text-gray-200">Join Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {creators.map((creator) => (
-                <TableRow key={creator.creator_id}>
+                <TableRow key={creator.creator_id} className="hover:bg-gray-800/40">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar>
@@ -88,20 +84,14 @@ const UsersTab = () => {
                         <AvatarFallback>{creator.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{creator.name}</div>
-                        <div className="text-sm text-muted-foreground">{creator.email}</div>
+                        <div className="font-medium text-gray-100">{creator.name}</div>
+                        <div className="text-sm text-gray-300">{creator.email}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{creator.campaigns}</TableCell>
-                  <TableCell>{formatCurrency(creator.total_raised)}</TableCell>
-                  <TableCell>{formatDate(creator.join_date)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost"><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-gray-200">{creator.campaigns}</TableCell>
+                  <TableCell className="text-gray-200">{formatCurrency(creator.total_raised)}</TableCell>
+                  <TableCell className="text-gray-200">{formatDate(creator.join_date)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -119,25 +109,24 @@ const UsersTab = () => {
       </Card>
 
       {/* Donors */}
-      <Card>
+      <Card className="bg-gray-900/70 border border-gray-700">
         <CardHeader>
-          <CardTitle>Donors</CardTitle>
-          <CardDescription>Registered donors and their contributions</CardDescription>
+          <CardTitle className="text-gray-100">Donors</CardTitle>
+          <CardDescription className="text-gray-300">Registered donors and their contributions</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Donor</TableHead>
-                <TableHead>Total Donations</TableHead>
-                <TableHead>Campaigns Supported</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="text-gray-200">Donor</TableHead>
+                <TableHead className="text-gray-200">Total Donations</TableHead>
+                <TableHead className="text-gray-200">Campaigns Supported</TableHead>
+                <TableHead className="text-gray-200">Join Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {donors.map((donor) => (
-                <TableRow key={donor.user_id}>
+                <TableRow key={donor.user_id} className="hover:bg-gray-800/40">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar>
@@ -145,19 +134,14 @@ const UsersTab = () => {
                         <AvatarFallback>{donor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{donor.name}</div>
-                        <div className="text-sm text-muted-foreground">{donor.email}</div>
+                        <div className="font-medium text-gray-100">{donor.name}</div>
+                        <div className="text-sm text-gray-300">{donor.email}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{formatCurrency(donor.total_donations)}</TableCell>
-                  <TableCell>{donor.campaigns_supported}</TableCell>
-                  <TableCell>{formatDate(donor.join_date)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost"><Eye className="h-4 w-4" /></Button>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-gray-200">{formatCurrency(donor.total_donations)}</TableCell>
+                  <TableCell className="text-gray-200">{donor.campaigns_supported}</TableCell>
+                  <TableCell className="text-gray-200">{formatDate(donor.join_date)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
