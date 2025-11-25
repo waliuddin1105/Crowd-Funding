@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast.js';
 import Navbar from '@/components/Navbar';
@@ -11,15 +11,22 @@ import UsersTab from '@/components/Dashboards/Admin/UsersTab';
 import TransactionHistory from '@/components/Dashboards/Admin/TransactionHistory';
 import AnalyticsTab from '@/components/Dashboards/Admin/AnalyticsTab';
 import AdminControls from '@/components/Dashboards/Admin/AdminControls';
+import UnauthorizedBox from '@/components/UnauthorizedBox';
+import { getUser } from '@/lib/auth.js';
 
 const AdminDashboard = () => {
   const { toast } = useToast();
-
+  const [user,setUser] = useState(null)
+  useEffect(() => {
+          window.scrollTo(0, 0);
+             let storedUser = getUser()
+              setUser(storedUser)
+      }, []);
   return (
     <>
       <Navbar />
 
-      <main
+      {user?.role == 'admin' ? (<main
         className="min-h-screen relative overflow-hidden text-white bg-gray-900"
         style={{
           backgroundImage: 'url("/your-background.jpg")',
@@ -123,7 +130,7 @@ const AdminDashboard = () => {
 
           </Tabs>
         </div>
-      </main>
+      </main>) : <UnauthorizedBox message={'You need to be an admin to visit this page'}/>}
     </>
   );
 };

@@ -7,7 +7,8 @@ import DonationHistory from "@/components/Dashboards/Donor/DonationHistory"
 import ActiveCampaigns from "@/components/Dashboards/Donor/ActiveCampaigns"
 import FollowingCampaigns from "@/components/Dashboards/Donor/FollowingCampaigns"
 import ProfileSettings from "@/components/Dashboards/Creator/ProfileSettings"
-import { getUser } from "@/lib/auth"
+import { getUser } from "@/lib/auth.js"
+import UnauthorizedBox from "@/components/UnauthorizedBox"
 
 export default function DonorDashboard() {
   const [user, setUser] = useState({})
@@ -20,7 +21,8 @@ export default function DonorDashboard() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-900 text-white">
+      {user?.role == 'donor' ? (
+        <div className="min-h-screen bg-gray-900 text-white">
         <div className="container mx-auto px-4 py-8">
           
           {/* Header */}
@@ -75,6 +77,7 @@ export default function DonorDashboard() {
           </Card>
         </div>
       </div>
+      ) : <UnauthorizedBox message={"You need to be a donor to visit this page"}/>}
     </>
   )
 }

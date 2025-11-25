@@ -7,14 +7,22 @@ import CreatorKeyStats from "@/components/Dashboards/Creator/CreatorKeyStats"
 import CreatorCampaigns from "@/components/Dashboards/Creator/CreatorCampaigns"
 import RecentCampaignDonations from "@/components/Dashboards/Creator/RecentCampaignDonations"
 import ProfileSettings from "@/components/Dashboards/Creator/ProfileSettings"
+import { useState,useEffect } from "react"
+import { getUser } from "@/lib/auth.js"
+import UnauthorizedBox from "@/components/UnauthorizedBox"
 
 export default function CreatorDashboard() {
   const navigate = useNavigate()
-
+  const [user,setUser] = useState(null)
+    useEffect(() => {
+            window.scrollTo(0, 0);
+               let storedUser = getUser()
+                setUser(storedUser)
+        }, []);
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100">
+      {user?.role=='creator' ? (<div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100">
         {/* Animated particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-500/30 rounded-full animate-float"></div>
@@ -97,7 +105,7 @@ export default function CreatorDashboard() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </div>) : <UnauthorizedBox message={'You need be be a creator to visit this page'}/>}
 
       <style jsx>{`
         @keyframes float {
