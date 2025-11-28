@@ -2,8 +2,8 @@ from flask_restx import Resource
 from flask import  request
 from api import db,admin_reviews_ns
 from api.models.cf_models import Campaigns, Users,Comments,AdminReviews,CampaignStatus
-from api.helpers.security_helper import jwt_required
 from api.fields.adminReviewsFields import admin_reviews_data
+from email_service.email_sender import send_email
 decision_to_status = {
     "approved": CampaignStatus.active,
     "rejected": CampaignStatus.rejected,
@@ -45,7 +45,27 @@ class CampaignStatusHandler(Resource):
 
             campaign.status = status_enum
             db.session.commit()
-
+            creator_email = campaign.creator.email
+            if (decision == 'rejected'):
+                send_email(
+                    receiver_email=creator_email,
+                    subject="Campaign Rejected",
+                    template_name="campaign_rejected.html",
+                    comments= comments,
+                    username= campaign.creator.username,
+                    campaign_name=campaign.title
+                )
+            else:
+                send_email(
+                    receiver_email=creator_email,
+                    subject="Campaign Approved",
+                    template_name="campaign_approved.html",
+                    username= campaign.creator.username,
+                    campaign_name=campaign.title,
+                    platform_name= "CrowdFunding"
+                )
+                
+            
             return {
                 "status": "success",
                 "message": "Campaign status updated and review saved",
