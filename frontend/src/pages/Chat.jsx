@@ -7,6 +7,7 @@ import { Send, Bot, User, MessageSquare, Loader2 } from "lucide-react";
 import axios from "axios";
 import { getUser } from "@/lib/auth";
 import Navbar from "@/components/Navbar";
+import UnauthorizedBox from "@/components/UnauthorizedBox";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -86,7 +87,7 @@ export default function Chat() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100">
+      {user ? (<><div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100">
         {/* Animated particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-500/30 rounded-full animate-float"></div>
@@ -263,7 +264,7 @@ export default function Chat() {
         .animate-fade-in {
           animation: fade-in 0.3s ease-out;
         }
-      `}</style>
+      `}</style></>) : <UnauthorizedBox message={'You need to Login to visit this page'}/>}
     </>
   );
 }
