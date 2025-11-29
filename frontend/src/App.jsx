@@ -14,6 +14,7 @@ import ContactUs from './pages/ContactUs.jsx'
 import SettingsPage from './pages/SettingsPage'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
+import Chat from './pages/Chat'
 
 function App() {
   const router = createBrowserRouter([
@@ -30,6 +31,7 @@ function App() {
     { path: '/settings', element: <SettingsPage /> },
     { path: '/success', element: <PaymentSuccess /> },
     { path: '/cancel', element: <PaymentCancel /> },
+    { path: '/chat', element: <Chat /> },
 
   ])
 

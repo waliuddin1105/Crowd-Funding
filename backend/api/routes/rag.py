@@ -17,9 +17,9 @@ from flask_restx import Resource, Namespace, fields
 from flask import request
 from api.helpers import rag_helper
 from RAG import chatbot_prod
+from api import chat_ns
 
 # Create namespace
-chat_ns = Namespace('chat', description='Chat operations')
 
 # Define API models for Swagger documentation
 chat_input = chat_ns.model('ChatInput', {
