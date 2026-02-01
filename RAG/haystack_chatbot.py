@@ -4,17 +4,20 @@ from haystack import Pipeline
 from haystack.components.converters import MarkdownToDocument
 from haystack.components.preprocessors import DocumentSplitter, DocumentCleaner
 from haystack.components.writers import DocumentWriter
-from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
+from haystack.components.embedders import OpenAIDocumentEmbedder, OpenAITextEmbedder
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
+from haystack.utils import Secret  # ADDED
 
 MODEL = "gpt-4o-mini"
+EMBEDDING_MODEL = "text-embedding-3-small"
 db_name = "vector_db"
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-global rag_pipeline
+
+rag_pipeline = None
 
 document_store = ChromaDocumentStore(
     collection_name="vector_db",
@@ -32,10 +35,12 @@ def build_vector_db():
         DocumentSplitter(split_by="word", split_length=200, split_overlap=20),
     )
 
+    # FIXED: Wrap API key in Secret
     pipeline.add_component(
         "embedder",
-        SentenceTransformersDocumentEmbedder(
-            model="sentence-transformers/all-MiniLM-L6-v2"
+        OpenAIDocumentEmbedder(
+            model=EMBEDDING_MODEL,
+            api_key=Secret.from_token(OPENAI_API_KEY)  # CHANGED
         ),
     )
 
@@ -47,8 +52,7 @@ def build_vector_db():
     pipeline.connect("embedder", "writer")
 
     import glob
-
-    md_files = glob.glob("../Crowd-Funding/RAG/knowledge_base/*.md")
+    md_files = glob.glob("knowledge_base/**/*.md", recursive=True)
 
     if not md_files:
         print("No markdown files found! Check your path.")
@@ -84,10 +88,12 @@ def vector_db_exists():
 def create_rag_pipeline():
     retrieval_pipeline = Pipeline()
 
+    # FIXED: Wrap API key in Secret
     retrieval_pipeline.add_component(
         "query_embedder",
-        SentenceTransformersTextEmbedder(
-            model="sentence-transformers/all-MiniLM-L6-v2"
+        OpenAITextEmbedder(
+            model=EMBEDDING_MODEL,
+            api_key=Secret.from_token(OPENAI_API_KEY)  # CHANGED
         ),
     )
 
@@ -114,16 +120,20 @@ CONTEXT FROM KNOWLEDGE BASE:
 ---
 {% endfor %}
 
+CHAT HISTORY:
+{{ chat_history }}
+
 CURRENT QUESTION: {{ question }}
 
 ANSWER:"""
 
     retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
 
+    # FIXED: Wrap API key in Secret
     retrieval_pipeline.add_component(
         "llm", OpenAIGenerator(
             model=MODEL, 
-            api_key=OPENAI_API_KEY,
+            api_key=Secret.from_token(OPENAI_API_KEY),  # CHANGED
             generation_kwargs={"temperature": 0.7}
         )
     )
@@ -157,6 +167,19 @@ def initialize_rag_pipeline():
     
     return rag_pipeline
 
+def format_chat_history(chat_history):
+    """Format chat history from database"""
+    if not chat_history or len(chat_history) == 0:
+        return "No previous conversation."
+    
+    formatted = []
+    for msg in chat_history:
+        role = "User" if msg.get('role') == 'user' else "Assistant"
+        message = msg.get('message', '')
+        formatted.append(f"{role}: {message}")
+    
+    return "\n".join(formatted)
+
 def get_chatbot_response(user_message, chat_history=None):
     """
     Generate a chatbot response using RAG with conversation history.
@@ -175,9 +198,16 @@ def get_chatbot_response(user_message, chat_history=None):
         if user_message.lower().strip() in small_talk:
             return small_talk[user_message.lower().strip()]
 
-        result = rag_pipeline.run({
+        pipeline = initialize_rag_pipeline()
+        
+        chat_history_str = format_chat_history(chat_history)
+
+        result = pipeline.run({
             "query_embedder": {"text": user_message},
-            "prompt_builder": {"question": user_message}
+            "prompt_builder": {
+                "question": user_message,
+                "chat_history": chat_history_str
+            }
         })
 
         answer = result["llm"]["replies"][0]
@@ -192,8 +222,22 @@ def get_chatbot_response(user_message, chat_history=None):
 
 
 if __name__ == "__main__":
+    # Build vector DB
     build_vector_db()
     
+    # Initialize pipeline
+    initialize_rag_pipeline()
+    
+    # Test without history
     print("\n--- Testing Chatbot ---")
     response = get_chatbot_response("What payment methods do you support?")
+    print(f"Response: {response}")
+    
+    # Test with history
+    print("\n--- Testing with History ---")
+    history = [
+        {'role': 'user', 'message': 'What payment methods do you support?'},
+        {'role': 'assistant', 'message': 'We support credit/debit cards, PayPal, EasyPaisa, and JazzCash.'}
+    ]
+    response = get_chatbot_response("Tell me more about the last one", chat_history=history)
     print(f"Response: {response}")
