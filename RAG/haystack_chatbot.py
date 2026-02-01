@@ -8,12 +8,13 @@ from haystack.components.embedders import SentenceTransformersDocumentEmbedder, 
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
-from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever  # FIXED IMPORT
+from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
 
 MODEL = "gpt-4o-mini"
 db_name = "vector_db"
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+global rag_pipeline
 
 document_store = ChromaDocumentStore(
     collection_name="vector_db",
@@ -122,6 +123,20 @@ ANSWER:"""
 
     return retrieval_pipeline
 
+def initialize_rag_pipeline():
+    global rag_pipeline
+    if rag_pipeline is None:
+        try:
+            count = document_store.count_documents()
+            if count == 0:
+                raise ValueError("Vector database is empty! Run build_vector_db() first.")
+            print(f"Vector DB loaded with {count} documents")
+        except Exception as e:
+            raise ValueError(f"Vector database not found or empty: {e}")
+        
+        rag_pipeline = create_rag_pipeline()
+        print("RAG pipeline initialized")
+    return rag_pipeline
 
 def get_chatbot_response(user_message, chat_history=None):
     """
@@ -140,8 +155,6 @@ def get_chatbot_response(user_message, chat_history=None):
         
         if user_message.lower().strip() in small_talk:
             return small_talk[user_message.lower().strip()]
-
-        rag_pipeline = create_rag_pipeline()
 
         result = rag_pipeline.run({
             "query_embedder": {"text": user_message},
