@@ -26,18 +26,4 @@ redis==5.1.0
 
 # Utilities
 python-dotenv>=1.0.0
-
-# Core dependencies for RAG chatbot with Haystack
-haystack-ai>=2.0.0
-
-# Haystack integrations
-chroma-haystack>=0.18.0
-
-# Vector store
-chromadb>=0.4.0
-
-# OpenAI (for embeddings and LLM)
-openai>=1.0.0
-
-# Additional utilities
 charset-normalizer>=3.0.0
