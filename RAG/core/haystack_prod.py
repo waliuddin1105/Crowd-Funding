@@ -51,7 +51,7 @@ def build_vector_db():
     pipeline.connect("embedder", "writer")
 
     import glob
-    md_files = glob.glob("knowledge_base/**/*.md", recursive=True)
+    md_files = glob.glob("../knowledge_base/**/*.md", recursive=True)
 
     if not md_files:
         print("No markdown files found! Check your path.")
