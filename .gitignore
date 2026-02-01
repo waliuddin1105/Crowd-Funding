@@ -22,6 +22,8 @@ secrets.env
 # LangChain / Chroma vector DB and DB files
 vector_db/
 RAG/vector_db/
+RAG/chroma_db/
+chroma_db/
 chroma.sqlite3
 *.sqlite3
 *.db
