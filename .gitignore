@@ -138,3 +138,5 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.cover
+
+RAG/chatbot.ipynb
