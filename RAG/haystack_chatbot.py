@@ -70,6 +70,16 @@ small_talk = {
     "goodbye": "Take care! Feel free to come back anytime.",
 }
 
+def vector_db_exists():
+    try:
+        if not os.path.exists("./chroma_db"):
+            return False
+        
+        count = document_store.count_documents()
+        return count > 0
+    except Exception as e:
+        print(f"Error checking vector DB: {e}")
+        return False
 
 def create_rag_pipeline():
     retrieval_pipeline = Pipeline()
@@ -125,17 +135,26 @@ ANSWER:"""
 
 def initialize_rag_pipeline():
     global rag_pipeline
+    
     if rag_pipeline is None:
-        try:
-            count = document_store.count_documents()
-            if count == 0:
-                raise ValueError("Vector database is empty! Run build_vector_db() first.")
-            print(f"Vector DB loaded with {count} documents")
-        except Exception as e:
-            raise ValueError(f"Vector database not found or empty: {e}")
+
+        if not vector_db_exists():
+            print("Vector database not found. Building vector database...")
+            try:
+                build_vector_db()
+                print("Vector database built successfully")
+            except Exception as e:
+                raise RuntimeError(f"Failed to build vector database: {e}")
+        
+        count = document_store.count_documents()
+        if count == 0:
+            raise RuntimeError("Vector database is empty! Please check your markdown files.")
+        
+        print(f"Vector DB loaded with {count} documents")
         
         rag_pipeline = create_rag_pipeline()
-        print("RAG pipeline initialized")
+        print("RAG pipeline initialized and ready")
+    
     return rag_pipeline
 
 def get_chatbot_response(user_message, chat_history=None):
