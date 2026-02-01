@@ -4,11 +4,11 @@ from haystack import Pipeline
 from haystack.components.converters import MarkdownToDocument
 from haystack.components.preprocessors import DocumentSplitter, DocumentCleaner
 from haystack.components.writers import DocumentWriter
-from haystack.components.embedders import SentenceTransformersDocumentEmbedder
+from haystack.components.embedders import SentenceTransformersDocumentEmbedder, SentenceTransformersTextEmbedder
 from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
-from haystack_integrations.retrievers.chroma import ChromaEmbeddingRetriever
+from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever  # FIXED IMPORT
 
 MODEL = "gpt-4o-mini"
 db_name = "vector_db"
@@ -22,7 +22,6 @@ document_store = ChromaDocumentStore(
 
 
 def build_vector_db():
-
     pipeline = Pipeline()
 
     pipeline.add_component("converter", MarkdownToDocument())
@@ -74,9 +73,10 @@ small_talk = {
 def create_rag_pipeline():
     retrieval_pipeline = Pipeline()
 
+    # FIXED: Use TextEmbedder for queries, not DocumentEmbedder
     retrieval_pipeline.add_component(
         "query_embedder",
-        SentenceTransformersDocumentEmbedder(
+        SentenceTransformersTextEmbedder(
             model="sentence-transformers/all-MiniLM-L6-v2"
         ),
     )
@@ -111,15 +111,58 @@ ANSWER:"""
     retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
 
     retrieval_pipeline.add_component(
-        "llm", OpenAIGenerator(model=MODEL, api_key=OPENAI_API_KEY, temperature=0.7)
+        "llm", OpenAIGenerator(
+            model=MODEL, 
+            api_key=OPENAI_API_KEY,
+            generation_kwargs={"temperature": 0.7}
+        )
     )
-
-    retrieval_pipeline.connect("query_embedder", "retriever")
-    retrieval_pipeline.connect("retriever", "prompt_builder")
+    retrieval_pipeline.connect("query_embedder.embedding", "retriever.query_embedding")
+    retrieval_pipeline.connect("retriever.documents", "prompt_builder.documents")
     retrieval_pipeline.connect("prompt_builder", "llm")
 
     return retrieval_pipeline
 
 
+def get_chatbot_response(user_message, chat_history=None):
+    """
+    Generate a chatbot response using RAG with conversation history.
+
+    Args:
+        user_message (str): The user's current message
+        chat_history (list): List of dicts with 'role' and 'message' keys from database
+
+    Returns:
+        str: The chatbot's response
+    """
+    try:
+        if not user_message or not user_message.strip():
+            return "Please provide a valid message."
+        
+        if user_message.lower().strip() in small_talk:
+            return small_talk[user_message.lower().strip()]
+
+        rag_pipeline = create_rag_pipeline()
+
+        result = rag_pipeline.run({
+            "query_embedder": {"text": user_message},
+            "prompt_builder": {"question": user_message}
+        })
+
+        answer = result["llm"]["replies"][0]
+
+        return answer
+
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        import traceback
+        traceback.print_exc()  # This will help debug
+        return "I'm sorry, something went wrong while processing your request."
+
+
 if __name__ == "__main__":
     build_vector_db()
+    
+    print("\n--- Testing Chatbot ---")
+    response = get_chatbot_response("What payment methods do you support?")
+    print(f"Response: {response}")
