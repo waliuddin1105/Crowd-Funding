@@ -9,7 +9,7 @@ from haystack_integrations.document_stores.chroma import ChromaDocumentStore
 from haystack.components.builders import PromptBuilder
 from haystack.components.generators import OpenAIGenerator
 from haystack_integrations.components.retrievers.chroma import ChromaEmbeddingRetriever
-from haystack.utils import Secret  # ADDED
+from haystack.utils import Secret
 
 MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
@@ -35,12 +35,11 @@ def build_vector_db():
         DocumentSplitter(split_by="word", split_length=200, split_overlap=20),
     )
 
-    # FIXED: Wrap API key in Secret
     pipeline.add_component(
         "embedder",
         OpenAIDocumentEmbedder(
             model=EMBEDDING_MODEL,
-            api_key=Secret.from_token(OPENAI_API_KEY)  # CHANGED
+            api_key=Secret.from_token(OPENAI_API_KEY)
         ),
     )
 
@@ -88,12 +87,11 @@ def vector_db_exists():
 def create_rag_pipeline():
     retrieval_pipeline = Pipeline()
 
-    # FIXED: Wrap API key in Secret
     retrieval_pipeline.add_component(
         "query_embedder",
         OpenAITextEmbedder(
             model=EMBEDDING_MODEL,
-            api_key=Secret.from_token(OPENAI_API_KEY)  # CHANGED
+            api_key=Secret.from_token(OPENAI_API_KEY)
         ),
     )
 
@@ -129,11 +127,10 @@ ANSWER:"""
 
     retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
 
-    # FIXED: Wrap API key in Secret
     retrieval_pipeline.add_component(
         "llm", OpenAIGenerator(
             model=MODEL, 
-            api_key=Secret.from_token(OPENAI_API_KEY),  # CHANGED
+            api_key=Secret.from_token(OPENAI_API_KEY),
             generation_kwargs={"temperature": 0.7}
         )
     )
@@ -222,18 +219,14 @@ def get_chatbot_response(user_message, chat_history=None):
 
 
 if __name__ == "__main__":
-    # Build vector DB
     build_vector_db()
     
-    # Initialize pipeline
     initialize_rag_pipeline()
     
-    # Test without history
     print("\n--- Testing Chatbot ---")
     response = get_chatbot_response("What payment methods do you support?")
     print(f"Response: {response}")
     
-    # Test with history
     print("\n--- Testing with History ---")
     history = [
         {'role': 'user', 'message': 'What payment methods do you support?'},
