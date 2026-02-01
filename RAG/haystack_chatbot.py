@@ -73,7 +73,6 @@ small_talk = {
 def create_rag_pipeline():
     retrieval_pipeline = Pipeline()
 
-    # FIXED: Use TextEmbedder for queries, not DocumentEmbedder
     retrieval_pipeline.add_component(
         "query_embedder",
         SentenceTransformersTextEmbedder(
@@ -156,7 +155,7 @@ def get_chatbot_response(user_message, chat_history=None):
     except Exception as e:
         print(f"Error generating response: {e}")
         import traceback
-        traceback.print_exc()  # This will help debug
+        traceback.print_exc()
         return "I'm sorry, something went wrong while processing your request."
 
 
