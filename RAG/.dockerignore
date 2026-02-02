@@ -1,0 +1,15 @@
+__pycache__/
+chroma_db/
+venv/
+
+.env
+.env.*
+
+langchain_chatbot_prod.py
+langchain_test_chatbot.ipynb
+.git/
+.gitignore
+*.md
+.pytest_cache/
+.DS_Store
+app/__pycache__/
