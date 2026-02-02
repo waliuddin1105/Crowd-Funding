@@ -22,27 +22,7 @@ export default function Chat() {
     setUser(storedUser)
   }, []);
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL;
-  useEffect(() => {
-    const loadHistory = async () => {
-      if (!user) return;
-      
-      try {
-        const res = await axios.get(`${API_BASE}/chat/history/${user.user_id}?limit=20`);
-        if (res.data.status === "success") {
-          const formatted = res.data.history.map((h) => ({
-            role: h.role,
-            message: h.message,
-          }));
-          setMessages(formatted);
-        }
-      } catch (err) {
-        console.error("Error loading chat history:", err);
-      }
-    };
-
-    loadHistory();
-  }, [user]);
+  const API_BASE = import.meta.env.VITE_RAG_URL || import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -63,14 +43,19 @@ export default function Chat() {
     setIsTyping(true);
 
     try {
-      const res = await axios.post(`${API_BASE}/chat`, {
-        user_id: user.user_id,
-        message: newUserMsg.message,
+      const chatHistory = messages.map((msg) => ({
+        role: msg.role.toLowerCase(),
+        message: msg.message,
+      }));
+
+      const res = await axios.post(`${API_BASE}/api/rag/chat`, {
+        user_message: newUserMsg.message,
+        chat_history: chatHistory,
       });
 
       const botReply = {
         role: "Assistant",
-        message: res.data.reply,
+        message: res.data.answer,
       };
 
       setMessages((prev) => [...prev, botReply]);
