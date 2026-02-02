@@ -16,7 +16,7 @@ if project_root not in sys.path:
 from flask_restx import Resource, Namespace, fields
 from flask import request
 from api.helpers import rag_helper
-from RAG import chatbot_prod
+from RAG import langchain_chatbot_prod
 from api import chat_ns
 
 # Create namespace
@@ -62,7 +62,7 @@ class ChatResource(Resource):
             chat_history = rag_helper.get_chat_history(user_id=user_id, limit=10)
 
             # Generate response
-            reply = chatbot_prod.get_chatbot_response(
+            reply = langchain_chatbot_prod.get_chatbot_response(
                 user_message=message, 
                 chat_history=chat_history
             )
@@ -84,9 +84,9 @@ class WarmupResource(Resource):
     def get(self):
         """Warmup endpoint to pre-load vector database"""
         try:
-            from RAG import chatbot_prod
+            from RAG import langchain_chatbot_prod
             # Trigger lazy loading
-            chatbot_prod.get_vectorstore()
+            langchain_chatbot_prod.get_vectorstore()
             return {"status": "success", "message": "Chatbot warmed up successfully"}, 200
         except Exception as e:
             print(f"Error warming up chatbot: {str(e)}")

@@ -216,21 +216,3 @@ def get_chatbot_response(user_message, chat_history=None):
         import traceback
         traceback.print_exc()
         return "I'm sorry, something went wrong while processing your request."
-
-
-if __name__ == "__main__":
-    build_vector_db()
-    
-    initialize_rag_pipeline()
-    
-    print("\n--- Testing Chatbot ---")
-    response = get_chatbot_response("What payment methods do you support?")
-    print(f"Response: {response}")
-    
-    print("\n--- Testing with History ---")
-    history = [
-        {'role': 'user', 'message': 'What payment methods do you support?'},
-        {'role': 'assistant', 'message': 'We support credit/debit cards, PayPal, EasyPaisa, and JazzCash.'}
-    ]
-    response = get_chatbot_response("Tell me more about the last one", chat_history=history)
-    print(f"Response: {response}")
