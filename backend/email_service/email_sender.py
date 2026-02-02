@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load .env for local development (no-op in Docker)
 load_dotenv()
 
 # Email configuration from environment variables

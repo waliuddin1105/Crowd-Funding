@@ -14,8 +14,14 @@ from haystack.utils import Secret
 MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
 db_name = "vector_db"
+
+# Load .env for local development (no-op in Docker)
 load_dotenv()
+
+# Environment variables are loaded by docker-compose via env_file
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY environment variable is not set")
 
 rag_pipeline = None
 
@@ -127,7 +133,7 @@ CURRENT QUESTION: {{ question }}
 ANSWER:"""
 
         retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
-    
+
         retrieval_pipeline.add_component(
             "llm", OpenAIGenerator(
                 model=MODEL, 

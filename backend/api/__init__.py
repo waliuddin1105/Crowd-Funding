@@ -1,3 +1,5 @@
+import os
+import os
 from flask import Flask
 from flask_restx import Api, Namespace
 from flask_sqlalchemy import SQLAlchemy
@@ -37,12 +39,20 @@ api = Api(
     security='bearer authorizations' 
 )
 
-config_parser = ConfigParser(interpolation=None)
-config_parser.read('config.cfg')
+# Try environment variables first (for Docker), fallback to config.cfg (for local dev)
+db_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
+secret_key = os.getenv('SECRET_KEY')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
+if not db_uri or not secret_key:
+    # Fallback to config.cfg for local development
+    config_parser = ConfigParser(interpolation=None)
+    config_parser.read('config.cfg')
+    db_uri = db_uri or config_parser.get('global', 'SQLALCHEMY_DATABASE_URI')
+    secret_key = secret_key or config_parser.get('global', 'SECRET_KEY')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = config_parser.get('global', 'SECRET_KEY')
+app.config['SECRET_KEY'] = secret_key
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
