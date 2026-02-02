@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..core.haystack_prod import build_vector_db, initialize_rag_pipeline, vector_db_exists, getchatbot_response
+from ..core.haystack_prod import build_vector_db, initialize_rag_pipeline, vector_db_exists, get_chatbot_response
 from ..schemas.chatbot_schema import ChatRequest
 
 router = APIRouter()
@@ -25,7 +25,7 @@ async def get_status():
 
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    reply = await getchatbot_response(request.user_message, request.chat_history)
+    reply = get_chatbot_response(request.user_message, request.chat_history)
     return {"answer": reply}
 
 @router.get("/health")

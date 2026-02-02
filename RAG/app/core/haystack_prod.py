@@ -51,10 +51,12 @@ def build_vector_db():
     pipeline.connect("embedder", "writer")
 
     import glob
-    md_files = glob.glob("../knowledge_base/**/*.md", recursive=True)
+    knowledge_base_path = os.path.join(os.path.dirname(__file__), "../../knowledge_base/**/*.md")
+    md_files = glob.glob(knowledge_base_path, recursive=True)
 
     if not md_files:
-        print("No markdown files found! Check your path.")
+        print(f"No markdown files found! Checked path: {knowledge_base_path}")
+        print(f"Absolute path: {os.path.abspath(knowledge_base_path)}")
         return
 
     print(f"Found {len(md_files)} markdown files")
@@ -195,11 +197,13 @@ def get_chatbot_response(user_message, chat_history=None):
         if user_message.lower().strip() in small_talk:
             return small_talk[user_message.lower().strip()]
 
-        pipeline = initialize_rag_pipeline()
+        if not vector_db_exists() or rag_pipeline is None:
+            print("Vector DB or RAG pipeline not ready. Initializing...")
+            initialize_rag_pipeline()
         
         chat_history_str = format_chat_history(chat_history)
 
-        result = pipeline.run({
+        result = rag_pipeline.run({
             "query_embedder": {"text": user_message},
             "prompt_builder": {
                 "question": user_message,
