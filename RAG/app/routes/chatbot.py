@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from ..core.haystack_prod import build_vector_db, initialize_rag_pipeline, vector_db_exists, get_chatbot_response
 from ..schemas.chatbot_schema import ChatRequest
 
@@ -6,31 +6,45 @@ router = APIRouter()
 
 @router.on_event("startup")
 async def startup_event():
-    if not vector_db_exists():
-        print("Vector database not found. Building vector database...")
-        try:
-            await initialize_rag_pipeline()
-            print("Vector database built successfully")
-        except Exception as e:
-            raise RuntimeError(f"Failed to build vector database: {e}")
-    else:
-        print("Vector database exists. Skipping build.")
+    try:
+        if not vector_db_exists():
+            try:
+                await initialize_rag_pipeline()
+            except Exception as e:
+                raise RuntimeError(f"Failed to build vector database: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Startup error: {e}")
 
 @router.get("/status")
 async def get_status():
-    return {
-        "pipeline_ready": vector_db_exists(),
-        "status": "operational" if vector_db_exists() else "initializing"
-    }
+    try:
+        db_exists = vector_db_exists()
+        return {
+            "pipeline_ready": db_exists,
+            "status": "operational" if db_exists else "initializing"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error checking pipeline status")
 
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    reply = get_chatbot_response(request.user_message, request.chat_history)
-    return {"answer": reply}
+    try:
+        if not request.user_message or not isinstance(request.user_message, str):
+            raise HTTPException(status_code=400, detail="Invalid user message")
+        
+        reply = get_chatbot_response(request.user_message, request.chat_history)
+        return {"answer": reply}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error generating response")
 
 @router.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    try:
+        return {"status": "ok", "pipeline_ready": vector_db_exists()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Health check failed")
 
 
 

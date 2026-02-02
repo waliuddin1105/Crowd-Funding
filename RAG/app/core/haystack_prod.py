@@ -26,43 +26,42 @@ document_store = ChromaDocumentStore(
 
 
 def build_vector_db():
-    pipeline = Pipeline()
+    """Build and persist the vector database from markdown files."""
+    try:
+        pipeline = Pipeline()
 
-    pipeline.add_component("converter", MarkdownToDocument())
-    pipeline.add_component("cleaner", DocumentCleaner())
-    pipeline.add_component(
-        "splitter",
-        DocumentSplitter(split_by="word", split_length=200, split_overlap=20),
-    )
+        pipeline.add_component("converter", MarkdownToDocument())
+        pipeline.add_component("cleaner", DocumentCleaner())
+        pipeline.add_component(
+            "splitter",
+            DocumentSplitter(split_by="word", split_length=200, split_overlap=20),
+        )
 
-    pipeline.add_component(
-        "embedder",
-        OpenAIDocumentEmbedder(
-            model=EMBEDDING_MODEL,
-            api_key=Secret.from_token(OPENAI_API_KEY)
-        ),
-    )
+        pipeline.add_component(
+            "embedder",
+            OpenAIDocumentEmbedder(
+                model=EMBEDDING_MODEL,
+                api_key=Secret.from_token(OPENAI_API_KEY)
+            ),
+        )
 
-    pipeline.add_component("writer", DocumentWriter(document_store))
+        pipeline.add_component("writer", DocumentWriter(document_store))
 
-    pipeline.connect("converter", "cleaner")
-    pipeline.connect("cleaner", "splitter")
-    pipeline.connect("splitter", "embedder")
-    pipeline.connect("embedder", "writer")
+        pipeline.connect("converter", "cleaner")
+        pipeline.connect("cleaner", "splitter")
+        pipeline.connect("splitter", "embedder")
+        pipeline.connect("embedder", "writer")
 
-    import glob
-    knowledge_base_path = os.path.join(os.path.dirname(__file__), "../../knowledge_base/**/*.md")
-    md_files = glob.glob(knowledge_base_path, recursive=True)
+        import glob
+        knowledge_base_path = os.path.join(os.path.dirname(__file__), "../../knowledge_base/**/*.md")
+        md_files = glob.glob(knowledge_base_path, recursive=True)
 
-    if not md_files:
-        print(f"No markdown files found! Checked path: {knowledge_base_path}")
-        print(f"Absolute path: {os.path.abspath(knowledge_base_path)}")
-        return
+        if not md_files:
+            return
 
-    print(f"Found {len(md_files)} markdown files")
-    pipeline.run({"converter": {"sources": md_files}})
-
-    print(f"Total documents in store: {document_store.count_documents()}")
+        pipeline.run({"converter": {"sources": md_files}})
+    except Exception as e:
+        raise RuntimeError(f"Failed to build vector database: {e}")
 
 
 small_talk = {
@@ -83,25 +82,25 @@ def vector_db_exists():
         count = document_store.count_documents()
         return count > 0
     except Exception as e:
-        print(f"Error checking vector DB: {e}")
         return False
 
 def create_rag_pipeline():
-    retrieval_pipeline = Pipeline()
+    try:
+        retrieval_pipeline = Pipeline()
 
-    retrieval_pipeline.add_component(
-        "query_embedder",
-        OpenAITextEmbedder(
-            model=EMBEDDING_MODEL,
-            api_key=Secret.from_token(OPENAI_API_KEY)
-        ),
-    )
+        retrieval_pipeline.add_component(
+            "query_embedder",
+            OpenAITextEmbedder(
+                model=EMBEDDING_MODEL,
+                api_key=Secret.from_token(OPENAI_API_KEY)
+            ),
+        )
 
-    retrieval_pipeline.add_component(
-        "retriever", ChromaEmbeddingRetriever(document_store=document_store, top_k=3)
-    )
+        retrieval_pipeline.add_component(
+            "retriever", ChromaEmbeddingRetriever(document_store=document_store, top_k=3)
+        )
 
-    template = """You are an AI assistant for a crowdfunding platform founded by Saad Zaidi, Waliuddin Ahmed, and Sajjad Ahmed - Computer Science students at FAST University.
+        template = """You are an AI assistant for a crowdfunding platform founded by Saad Zaidi, Waliuddin Ahmed, and Sajjad Ahmed - Computer Science students at FAST University.
 
 YOUR ROLE:
 You help users understand and navigate our crowdfunding platform where people can donate to verified causes through multiple payment methods including credit/debit cards, PayPal, EasyPaisa, and JazzCash.
@@ -127,42 +126,43 @@ CURRENT QUESTION: {{ question }}
 
 ANSWER:"""
 
-    retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
-
-    retrieval_pipeline.add_component(
-        "llm", OpenAIGenerator(
-            model=MODEL, 
-            api_key=Secret.from_token(OPENAI_API_KEY),
-            generation_kwargs={"temperature": 0.7}
+        retrieval_pipeline.add_component("prompt_builder", PromptBuilder(template=template))
+    
+        retrieval_pipeline.add_component(
+            "llm", OpenAIGenerator(
+                model=MODEL, 
+                api_key=Secret.from_token(OPENAI_API_KEY),
+                generation_kwargs={"temperature": 0.7}
+            )
         )
-    )
-    retrieval_pipeline.connect("query_embedder.embedding", "retriever.query_embedding")
-    retrieval_pipeline.connect("retriever.documents", "prompt_builder.documents")
-    retrieval_pipeline.connect("prompt_builder", "llm")
+        retrieval_pipeline.connect("query_embedder.embedding", "retriever.query_embedding")
+        retrieval_pipeline.connect("retriever.documents", "prompt_builder.documents")
+        retrieval_pipeline.connect("prompt_builder", "llm")
 
-    return retrieval_pipeline
+        return retrieval_pipeline
+    except Exception as e:
+        raise RuntimeError(f"Failed to create RAG pipeline: {e}")
 
 def initialize_rag_pipeline():
     global rag_pipeline
     
     if rag_pipeline is None:
-
-        if not vector_db_exists():
-            print("Vector database not found. Building vector database...")
-            try:
-                build_vector_db()
-                print("Vector database built successfully")
-            except Exception as e:
-                raise RuntimeError(f"Failed to build vector database: {e}")
-        
-        count = document_store.count_documents()
-        if count == 0:
-            raise RuntimeError("Vector database is empty! Please check your markdown files.")
-        
-        print(f"Vector DB loaded with {count} documents")
-        
-        rag_pipeline = create_rag_pipeline()
-        print("RAG pipeline initialized and ready")
+        try:
+            if not vector_db_exists():
+                try:
+                    build_vector_db()
+                except Exception as e:
+                    raise RuntimeError(f"Failed to build vector database: {e}")
+            
+            count = document_store.count_documents()
+            if count == 0:
+                raise RuntimeError("Vector database is empty! Please check your markdown files.")
+            
+            rag_pipeline = create_rag_pipeline()
+        except RuntimeError:
+            raise
+        except Exception as e:
+            raise RuntimeError(f"Unexpected error during RAG pipeline initialization: {e}")
     
     return rag_pipeline
 
@@ -191,15 +191,21 @@ def get_chatbot_response(user_message, chat_history=None):
         str: The chatbot's response
     """
     try:
-        if not user_message or not user_message.strip():
+        if not user_message or not isinstance(user_message, str):
+            return "Please provide a valid message."
+        
+        if not user_message.strip():
             return "Please provide a valid message."
         
         if user_message.lower().strip() in small_talk:
             return small_talk[user_message.lower().strip()]
 
+        # Check if vector db and rag pipeline exist
         if not vector_db_exists() or rag_pipeline is None:
-            print("Vector DB or RAG pipeline not ready. Initializing...")
             initialize_rag_pipeline()
+        
+        if rag_pipeline is None:
+            return "RAG pipeline is not initialized. Please try again later."
         
         chat_history_str = format_chat_history(chat_history)
 
@@ -215,8 +221,9 @@ def get_chatbot_response(user_message, chat_history=None):
 
         return answer
 
+    except RuntimeError as e:
+        return f"Service error: {str(e)}"
+    except KeyError:
+        return "Error processing response. Please try again."
     except Exception as e:
-        print(f"Error generating response: {e}")
-        import traceback
-        traceback.print_exc()
         return "I'm sorry, something went wrong while processing your request."
