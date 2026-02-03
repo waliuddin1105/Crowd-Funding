@@ -21,9 +21,11 @@ COPY --chown=appuser:appuser . .
 
 USER appuser
 
+ENV PORT=5000
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/health', timeout=3)" || exit 1
+    CMD python -c "import os,requests; requests.get(f'http://localhost:{os.getenv('PORT','5000')}/health', timeout=3)" || exit 1
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "run:app"]
+CMD ["/bin/sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 4 --timeout 120 run:app"]

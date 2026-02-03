@@ -20,9 +20,11 @@ COPY --chown=appuser:appuser . .
 
 USER appuser
 
+ENV PORT=8000
+
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=3)" || exit 1
+    CMD python -c "import os,requests; requests.get(f'http://localhost:{os.getenv('PORT','8000')}/health', timeout=3)" || exit 1
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--timeout-keep-alive", "120"]
+CMD ["/bin/sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --timeout-keep-alive 120"]
