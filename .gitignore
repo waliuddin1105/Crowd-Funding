@@ -11,10 +11,14 @@ ENV/
 
 # Environment / secret files
 .env
-.env.*
+.env.local
+.env.*.local
 secrets.env
 *.key
 *.pem
+config.cfg
+# Keep .env.example for documentation
+!.env.example
 
 # Jupyter
 .ipynb_checkpoints/
@@ -23,6 +27,7 @@ secrets.env
 vector_db/
 RAG/vector_db/
 RAG/chroma_db/
+RAG/app/core/chroma_db/
 chroma_db/
 chroma.sqlite3
 *.sqlite3
@@ -141,4 +146,4 @@ htmlcov/
 coverage.xml
 *.cover
 
-RAG/chatbot.ipynb
+RAG/chatbot.ipynb.env.docker

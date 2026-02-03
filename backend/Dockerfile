@@ -8,7 +8,7 @@ RUN useradd -m -u 1000 appuser && \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -21,11 +21,10 @@ COPY --chown=appuser:appuser . .
 
 USER appuser
 
-ENV PORT=5000
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import os,requests; requests.get(f'http://localhost:{os.getenv('PORT','5000')}/health', timeout=3)" || exit 1
+EXPOSE ${PORT:-5000}
 
-EXPOSE 5000
-
-CMD ["/bin/sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 4 --timeout 120 run:app"]
+# Run migrations then start gunicorn with workers and threads for Railway
+CMD ["/bin/sh", "-c", "flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 120 run:app"]

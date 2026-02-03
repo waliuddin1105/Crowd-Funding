@@ -3,6 +3,7 @@
 # FastAPI stack
 fastapi
 uvicorn
+gunicorn
 
 # Core dependencies for RAG chatbot with Haystack
 haystack-ai>=2.0.0

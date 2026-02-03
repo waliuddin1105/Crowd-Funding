@@ -1,0 +1,6 @@
+[global]
+
+SQLALCHEMY_DATABASE_URI = postgresql://postgres:your_password@localhost:5432/crowdfunding_platform
+SECRET_KEY = your-secret-key-change-this
+ADMIN_PASSWORD = your-admin-password
+STRIPE_SECRET_KEY = sk_test_your_stripe_test_key

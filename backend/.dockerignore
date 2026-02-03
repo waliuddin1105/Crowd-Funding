@@ -1,14 +1,36 @@
+# Development directories
 debugging/
-__pycache__/
 testing/
+
+# Python
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
 venv/
+.venv/
+
+# Environment files
 .env
 .env.*
-.config.cfg
+!.env.example
+config.cfg
+
+# Git
 .git/
 .gitignore
 .gitattributes
+
+# Documentation
 *.md
+!README.md
+
+# Testing
 .pytest_cache/
-*.pyc
+
+# OS
 .DS_Store
+Thumbs.db

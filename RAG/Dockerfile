@@ -16,15 +16,15 @@ COPY --chown=appuser:appuser requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Copy application code (knowledge_base included, chroma_db excluded via .dockerignore)
 COPY --chown=appuser:appuser . .
 
 USER appuser
 
-ENV PORT=8000
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import os,requests; requests.get(f'http://localhost:{os.getenv('PORT','8000')}/health', timeout=3)" || exit 1
+EXPOSE ${PORT:-8000}
 
-EXPOSE 8000
-
-CMD ["/bin/sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --timeout-keep-alive 120"]
+# Use gunicorn with uvicorn workers for production
+CMD ["/bin/sh", "-c", "gunicorn app.main:app --bind 0.0.0.0:${PORT:-8000} --workers 2 --worker-class uvicorn.workers.UvicornWorker --timeout 120"]
