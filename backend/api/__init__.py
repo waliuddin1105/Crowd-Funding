@@ -15,7 +15,6 @@ print("=" * 50)
 print("ENVIRONMENT VARIABLE STATUS:")
 print(f"  DATABASE_URL: {'SET' if os.getenv('DATABASE_URL') else 'MISSING'}")
 print(f"  SECRET_KEY: {'SET' if os.getenv('SECRET_KEY') else 'MISSING'}")
-print(f"  JWT_SECRET_KEY: {'SET' if os.getenv('JWT_SECRET_KEY') else 'MISSING'}")
 print("=" * 50)
 
 authorizations = {
