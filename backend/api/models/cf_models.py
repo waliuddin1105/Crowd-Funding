@@ -387,6 +387,6 @@ class AdminReviews(db.Model):
 #            "message": self.message,
 #            "timestamp": self.timestamp,
 #        }
-    
-with app.app_context():
-    db.create_all()
+
+# Removed db.create_all() - using Flask-Migrate for database migrations instead
+# Run 'flask db upgrade' to apply migrations

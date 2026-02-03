@@ -22,9 +22,10 @@ COPY --chown=appuser:appuser . .
 USER appuser
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=run.py
 
 EXPOSE ${PORT:-5000}
 
-# Run migrations then start gunicorn with workers and threads for Railway
-CMD ["/bin/sh", "-c", "flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 120 run:app"]
+# Run migrations then start gunicorn
+CMD ["/bin/sh", "-c", "flask db upgrade 2>/dev/null || echo 'Migration skipped or failed - continuing...' && gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 --timeout 120 run:app"]
