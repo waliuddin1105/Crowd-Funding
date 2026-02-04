@@ -7,11 +7,8 @@ router = APIRouter()
 @router.on_event("startup")
 async def startup_event():
     try:
-        if not vector_db_exists():
-            try:
-                await initialize_rag_pipeline()
-            except Exception as e:
-                raise RuntimeError(f"Failed to build vector database: {e}")
+        # Initialize the RAG pipeline (synchronous - not awaited)
+        initialize_rag_pipeline()
     except Exception as e:
         raise RuntimeError(f"Startup error: {e}")
 
