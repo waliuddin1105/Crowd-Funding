@@ -26,11 +26,12 @@ async def lifespan(app: FastAPI):
     
     # Pre-load the pipeline to catch errors early
     try:
-        from .core.haystack_prod import get_pipeline
-        pipeline = get_pipeline()
+        from .core.haystack_prod import initialize_rag_pipeline
+        initialize_rag_pipeline()
         print("✓ RAG Pipeline loaded successfully")
     except Exception as e:
         print(f"✗ RAG Pipeline failed to load: {e}")
+        # Don't crash - let the service start anyway
     
     yield
     # Shutdown

@@ -4,20 +4,28 @@ from ..schemas.chatbot_schema import ChatRequest
 
 router = APIRouter()
 
+# Track pipeline status
+pipeline_ready = False
+
 @router.on_event("startup")
 async def startup_event():
+    global pipeline_ready
     try:
         # Initialize the RAG pipeline (synchronous - not awaited)
         initialize_rag_pipeline()
+        pipeline_ready = True
+        print("✓ Chatbot router: Pipeline initialized successfully")
     except Exception as e:
-        raise RuntimeError(f"Startup error: {e}")
+        print(f"✗ Chatbot router: Pipeline initialization failed: {e}")
+        # Don't crash - let the service start so CORS works
+        pipeline_ready = False
 
 @router.get("/status")
 async def get_status():
     try:
         db_exists = vector_db_exists()
         return {
-            "pipeline_ready": db_exists,
+            "pipeline_ready": db_exists and pipeline_ready,
             "status": "operational" if db_exists else "initializing"
         }
     except Exception as e:
