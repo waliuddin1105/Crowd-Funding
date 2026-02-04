@@ -42,7 +42,9 @@ export default function Home() {
       try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL
         const res = await axios.get(`${backendUrl}/campaigns/stats`);
-        setStats(res.data.stats);
+        if (res.data && res.data.stats) {
+          setStats(res.data.stats);
+        }
       } catch (error) {
         console.error("Error fetching stats:", error);
       }
