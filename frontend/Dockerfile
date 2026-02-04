@@ -3,9 +3,13 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
-# Hardcode production URLs (Railway doesn't pass build args properly)
-ENV VITE_BACKEND_URL=https://backend-flask-production-0e2b.up.railway.app
-ENV VITE_RAG_URL=https://rag-production-368f.up.railway.app/api/rag
+# Build arguments - pass these from Railway
+ARG VITE_BACKEND_URL
+ARG VITE_RAG_URL
+
+# Set as environment variables for the build process
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+ENV VITE_RAG_URL=$VITE_RAG_URL
 
 COPY package*.json ./
 
