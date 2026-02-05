@@ -75,12 +75,16 @@ class RegisterUser(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-            send_email(
-                receiver_email=new_user.email,
-                subject="Welcome to CrowdFund",
-                template_name="welcome.html",
-                username = new_user.username
-            )
+            try:
+                send_email(
+                    receiver_email=new_user.email,
+                    subject="Welcome to CrowdFund",
+                    template_name="welcome.html",
+                    username = new_user.username
+                )
+            except Exception:
+                pass
+            
             return {
                 "Success" : "User registered succesfully!",
                 "user_id" : new_user.to_dict()

@@ -45,25 +45,29 @@ class CampaignStatusHandler(Resource):
 
             campaign.status = status_enum
             db.session.commit()
-            creator_email = campaign.creator.email
-            if (decision == 'rejected'):
-                send_email(
-                    receiver_email=creator_email,
-                    subject="Campaign Rejected",
-                    template_name="campaign_rejected.html",
-                    comments= comments,
-                    username= campaign.creator.username,
-                    campaign_name=campaign.title
-                )
-            else:
-                send_email(
-                    receiver_email=creator_email,
-                    subject="Campaign Approved",
-                    template_name="campaign_approved.html",
-                    username= campaign.creator.username,
-                    campaign_name=campaign.title,
-                    platform_name= "CrowdFunding"
-                )
+            
+            try:
+                creator_email = campaign.creator.email
+                if (decision == 'rejected'):
+                    send_email(
+                        receiver_email=creator_email,
+                        subject="Campaign Rejected",
+                        template_name="campaign_rejected.html",
+                        comments= comments,
+                        username= campaign.creator.username,
+                        campaign_name=campaign.title
+                    )
+                else:
+                    send_email(
+                        receiver_email=creator_email,
+                        subject="Campaign Approved",
+                        template_name="campaign_approved.html",
+                        username= campaign.creator.username,
+                        campaign_name=campaign.title,
+                        platform_name= "CrowdFunding"
+                    )
+            except Exception:
+                pass
                 
             
             return {
