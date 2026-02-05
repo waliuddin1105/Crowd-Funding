@@ -232,6 +232,7 @@ export default function Register() {
             })
 
             const data = await response.json()
+            console.log("Registration response:", response.status, data)
 
             if (response.ok) {
                 toast({
@@ -239,10 +240,8 @@ export default function Register() {
                     description: `Welcome ${username}! Redirecting to login page...`,
                     variant: "default",
                 })
-
-                setTimeout(() => {
-                    navigate('/login')
-                }, 1500)
+                setLoading(false)
+                navigate('/login')
             } else {
                 const errorMessage = data.Error || "Registration failed"
                 toast({
@@ -250,6 +249,7 @@ export default function Register() {
                     description: errorMessage,
                     variant: "destructive",
                 })
+                setLoading(false)
             }
         } catch (err) {
             console.error("Registration error:", err)
@@ -258,7 +258,6 @@ export default function Register() {
                 description: "Please check your connection and try again.",
                 variant: "destructive",
             })
-        } finally {
             setLoading(false)
         }
     }
