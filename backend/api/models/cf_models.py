@@ -368,25 +368,25 @@ class AdminReviews(db.Model):
         }
 
 
-class ChatHistory(db.Model):
-    __tablename__ = "chat_history"
+#class ChatHistory(db.Model):
+#    __tablename__ = "chat_history"
+#
+#    chat_id = db.Column(db.Integer, primary_key=True)
+#    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+#    role = db.Column(db.String(10), nullable=False)
+#    message = db.Column(db.Text, nullable=False)
+#    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+#
+#    user = db.relationship("Users", backref=db.backref("chat_history", lazy=True))
+#
+#    def to_dict(self):
+#        return {
+#            "chat_id": self.chat_id,
+#            "user_id": self.user_id,
+#            "role": self.role,
+#            "message": self.message,
+#            "timestamp": self.timestamp,
+#        }
 
-    chat_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    role = db.Column(db.String(10), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    user = db.relationship("Users", backref=db.backref("chat_history", lazy=True))
-
-    def to_dict(self):
-        return {
-            "chat_id": self.chat_id,
-            "user_id": self.user_id,
-            "role": self.role,
-            "message": self.message,
-            "timestamp": self.timestamp,
-        }
-    
-with app.app_context():
-    db.create_all()
+# Removed db.create_all() - using Flask-Migrate for database migrations instead
+# Run 'flask db upgrade' to apply migrations

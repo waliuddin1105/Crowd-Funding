@@ -28,7 +28,12 @@ function formatCurrency(n) {
 export default function Home() {
   const [campaigns, setCampaigns] = useState([])
   const [pledge, setPledge] = useState(50)
-  const [stats, setStats] = useState([])
+  const [stats, setStats] = useState({
+    total_raised: 0,
+    total_donors: 0,
+    success_rate: 0,
+    active_campaigns: 0
+  })
   const navigate = useNavigate()
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -37,7 +42,9 @@ export default function Home() {
       try {
         const backendUrl = import.meta.env.VITE_BACKEND_URL
         const res = await axios.get(`${backendUrl}/campaigns/stats`);
-        setStats(res.data.stats);
+        if (res.data && res.data.stats) {
+          setStats(res.data.stats);
+        }
       } catch (error) {
         console.error("Error fetching stats:", error);
       }

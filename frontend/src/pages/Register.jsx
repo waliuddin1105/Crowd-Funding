@@ -134,7 +134,6 @@ export default function Register() {
         const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
         formData.append("file", file)
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-        const defaultImgURL = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1763711531/default_pfp_w2lnen.jpg`
             
         try {
             const response = await fetch(
@@ -220,7 +219,7 @@ export default function Register() {
                 email: email.toLowerCase().trim(),
                 password: password,
                 role: role,
-                profile_image: profileImage || defaultImgURL
+                profile_image: profileImage || null
             }
             const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -434,7 +433,7 @@ export default function Register() {
 
                             {/* Profile Image Upload */}
                             <div>
-                                <label className="block text-sm font-semibold mb-2 text-gray-300">Profile Image (Required)</label>
+                                <label className="block text-sm font-semibold mb-2 text-gray-300">Profile Image <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
 
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-gray-800/30 border border-gray-700">
                                     {/* Image Preview */}
