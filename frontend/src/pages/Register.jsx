@@ -116,7 +116,7 @@ export default function Register() {
     const [errors, setErrors] = useState({})
     const [touched, setTouched] = useState({})
 
-    
+
     function validate() {
         const next = {}
         if (!username || username.trim().length < 2) next.username = "Please enter a username (min 2 chars)"
@@ -134,7 +134,7 @@ export default function Register() {
         const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
         formData.append("file", file)
         formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-            
+
         try {
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -232,7 +232,6 @@ export default function Register() {
             })
 
             const data = await response.json()
-            console.log("Registration response:", response.status, data)
 
             if (response.ok) {
                 toast({
@@ -240,10 +239,14 @@ export default function Register() {
                     description: `Welcome ${username}! Redirecting to login page...`,
                     variant: "default",
                 })
-                setLoading(false)
-                navigate('/login')
+
+                navigate('/login', { replace: true })
+
+                setTimeout(() => {
+                    setLoading(false)
+                }, 100)
             } else {
-                const errorMessage = data.Error || "Registration failed"
+                const errorMessage = data.Error || data.error || data.message || "Registration failed"
                 toast({
                     title: "Registration Failed",
                     description: errorMessage,
