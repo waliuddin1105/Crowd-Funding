@@ -6,6 +6,7 @@ from api.models.cf_models import Users
 from api.helpers.security_helper import generate_jwt, jwt_required
 from api.helpers.user_helper import search_users
 from email_service.email_sender import send_email
+from email_service.email_background import send_email_background
 #/users/login
 @users_ns.route('/login')
 class LoginUser(Resource):
@@ -76,7 +77,7 @@ class RegisterUser(Resource):
             db.session.commit()
 
             try:
-                send_email(
+                send_email_background(
                     receiver_email=new_user.email,
                     subject="Welcome to CrowdFund",
                     template_name="welcome.html",
