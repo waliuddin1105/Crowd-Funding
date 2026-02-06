@@ -76,15 +76,15 @@ class RegisterUser(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-            try:
-                send_email_background(
-                    receiver_email=new_user.email,
-                    subject="Welcome to CrowdFund",
-                    template_name="welcome.html",
-                    username = new_user.username
-                )
-            except Exception:
-                pass
+            # try:
+            #     send_email_background(
+            #         receiver_email=new_user.email,
+            #         subject="Welcome to CrowdFund",
+            #         template_name="welcome.html",
+            #         username = new_user.username
+            #     )
+            # except Exception:
+            #     pass
             
             return {
                 "Success" : "User registered succesfully!",
