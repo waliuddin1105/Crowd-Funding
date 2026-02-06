@@ -39,6 +39,15 @@ CORS(app, resources={
     }
 })
 
+# Force CORS headers on all responses (including OPTIONS)
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Expose-Headers"] = "Content-Type, Authorization"
+    return response
+
 api = Api(
     app,
     version='1.0',
@@ -103,6 +112,38 @@ payments_ns = Namespace('Payments', description='Data about the payments')
 updates_ns = Namespace('Updates', description="Data about the updates")
 follows_ns = Namespace('Follows', description = 'Data about user follows')
 campaign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
+admin_reviews_ns = Namespace('Admin Reviews', description = 'Data about admin reviews')
+creator_ns = Namespace('Creator', description= "Creator dashboard")
+
+api.add_namespace(users_ns, '/users')
+api.add_namespace(campaigns_ns, '/campaigns')
+api.add_namespace(donations_ns, '/donations')
+api.add_namespace(comments_ns, '/comments')
+api.add_namespace(payments_ns, '/payments')
+api.add_namespace(updates_ns, '/updates')
+api.add_namespace(follows_ns, '/follows')
+api.add_namespace(campaign_updates_ns, '/campaign-updates')
+api.add_namespace(admin_reviews_ns,'/admin-reviews')
+api.add_namespace(creator_ns,'/creator')
+
+# Force SQLAlchemy to configure all mappers
+try:
+    from sqlalchemy.orm import configure_mappers
+    configure_mappers()
+except Exception as e:
+    print(f"Warning: Mapper configuration issue: {e}")
+    print("Continuing anyway - this might cause issues with some models")
+
+
+import api.models.cf_models
+import api.routes.usersRoutes
+import api.routes.campaigns  
+import api.routes.comments
+import api.routes.donationsRoutes
+import api.routes.creatorDashboardRoutes
+import api.routes.payments
+import api.routes.follows
+import api.routes.admin_reviews  paign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
 admin_reviews_ns = Namespace('Admin Reviews', description = 'Data about admin reviews')
 creator_ns = Namespace('Creator', description= "Creator dashboard")
 
