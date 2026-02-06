@@ -143,7 +143,8 @@ import api.routes.donationsRoutes
 import api.routes.creatorDashboardRoutes
 import api.routes.payments
 import api.routes.follows
-import api.routes.admin_reviews  paign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
+import api.routes.admin_reviews
+campaign_updates_ns = Namespace('Campaign Updates', description="Data about the campaign updates")
 admin_reviews_ns = Namespace('Admin Reviews', description = 'Data about admin reviews')
 creator_ns = Namespace('Creator', description= "Creator dashboard")
 
