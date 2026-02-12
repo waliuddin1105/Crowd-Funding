@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from ..core.haystack_prod import build_vector_db, initialize_rag_pipeline, vector_db_exists, get_chatbot_response
 from ..schemas.chatbot_schema import ChatRequest
+from slowapi.util import get_remote_address
+from ..limiter import limiter
+
 
 router = APIRouter()
 
@@ -32,6 +35,7 @@ async def get_status():
         raise HTTPException(status_code=500, detail="Error checking pipeline status")
 
 @router.post("/chat")
+@limiter.limit("10/minute")
 async def chat_endpoint(request: ChatRequest):
     try:
         if not request.user_message or not isinstance(request.user_message, str):
