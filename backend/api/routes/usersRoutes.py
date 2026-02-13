@@ -7,10 +7,14 @@ from api.helpers.security_helper import generate_jwt, jwt_required
 from api.helpers.user_helper import search_users
 from email_service.email_sender import send_email
 from email_service.email_background import send_email_background
+from ...limiter import limiter
 #/users/login
 @users_ns.route('/login')
 class LoginUser(Resource):
     @users_ns.doc('Login a user')
+    @limiter.limit("5/minute")
+    @limiter.limit("20/hour")
+    @limiter.limit("5/minute", key_func=lambda: request.json.get("username"))
     @users_ns.expect(users_data)
     def post(self):
         try:
@@ -49,6 +53,8 @@ class UserLogout(Resource):
 @users_ns.route('/register')
 class RegisterUser(Resource):
     @users_ns.doc('Register a user')
+    @limiter.limit("1/min")
+    @limiter.limit("10/hour")
     @users_ns.expect(users_data)
     def post(self):
         try:
@@ -123,6 +129,7 @@ class GetUserProfile(Resource):
 class UpdateUserProfile(Resource):
     @jwt_required
     @users_ns.doc("Update user profile")
+    @limiter.limit("10/day")
     @users_ns.expect(users_update_data)
     def put(self):
         from flask import g
