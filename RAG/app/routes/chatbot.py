@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from ..core.haystack_prod import build_vector_db, initialize_rag_pipeline, vector_db_exists, get_chatbot_response
 from ..schemas.chatbot_schema import ChatRequest
 from slowapi.util import get_remote_address
@@ -36,12 +36,12 @@ async def get_status():
 
 @router.post("/chat")
 @limiter.limit("10/minute")
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(request:Request, chat_request: ChatRequest):
     try:
-        if not request.user_message or not isinstance(request.user_message, str):
+        if not chat_request.user_message or not isinstance(chat_request.user_message, str):
             raise HTTPException(status_code=400, detail="Invalid user message")
         
-        reply = get_chatbot_response(request.user_message, request.chat_history)
+        reply = get_chatbot_response(chat_request.user_message, chat_request.chat_history)
         return {"answer": reply}
     except HTTPException:
         raise
