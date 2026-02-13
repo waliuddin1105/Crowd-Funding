@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_cors import CORS
-from ..limiter import limiter
+from api.helpers.limiter import limiter
 
 # Load .env for local development (no-op in Docker/Railway)
 load_dotenv()

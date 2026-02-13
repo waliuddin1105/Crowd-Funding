@@ -7,7 +7,7 @@ from api.helpers.security_helper import generate_jwt, jwt_required
 from api.helpers.user_helper import search_users
 from email_service.email_sender import send_email
 from email_service.email_background import send_email_background
-from ...limiter import limiter
+from ..helpers.limiter import limiter
 #/users/login
 @users_ns.route('/login')
 class LoginUser(Resource):
