@@ -1,0 +1,13 @@
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+
+
+limiter = Limiter(get_remote_address,
+                  storage_uri=REDIS_URL)    

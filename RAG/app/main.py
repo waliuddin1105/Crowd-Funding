@@ -3,9 +3,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from .routes.chatbot import router as chatbot_router
-
+from .limiter import limiter
 
 # Pydantic models for request/response validation
 class HealthResponse(BaseModel):
@@ -39,11 +41,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
+    docs_url=None if os.getenv("ENV") == "production" else "/docs",
+    redoc_url=None if os.getenv("ENV") == "production" else "/redoc",
     title="Crowdfunding RAG API",
     description="RAG-powered chatbot for crowdfunding platform",
     version="1.0.0",
     lifespan=lifespan
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS (Railway: set FRONTEND_URL or FRONTEND_URLS)
 frontend_urls = os.getenv("FRONTEND_URLS") or os.getenv("FRONTEND_URL") or ""
