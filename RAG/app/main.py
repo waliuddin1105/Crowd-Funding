@@ -7,7 +7,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from .routes.chatbot import router as chatbot_router
-from limiter import limiter
+from .limiter import limiter
 
 # Pydantic models for request/response validation
 class HealthResponse(BaseModel):
