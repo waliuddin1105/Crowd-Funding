@@ -148,3 +148,6 @@ coverage.xml
 
 RAG/chatbot.ipynb.env.docker
 .env.docker
+
+
+.sentry-native/
