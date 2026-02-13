@@ -41,6 +41,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
+    docs_url=None if os.getenv("ENV") == "production" else "/docs",
+    redoc_url=None if os.getenv("ENV") == "production" else "/redoc",
     title="Crowdfunding RAG API",
     description="RAG-powered chatbot for crowdfunding platform",
     version="1.0.0",
